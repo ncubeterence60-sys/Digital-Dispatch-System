@@ -1,0 +1,53 @@
+meta {
+  name: Update Driver Status
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{base_url}}/drivers/{{driver_id}}/status
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "status": "Available"
+  }
+}
+
+docs {
+  ## Update Driver Status
+
+  Changes the availability status of a driver (Available, Busy, Offline).
+
+  ### URL Parameters
+  - `driver_id`: The ID of the driver to update
+
+  ### Request Body
+  - `status`: New status for the driver
+    - `"Available"`: Driver is ready for assignments
+    - `"Busy"`: Driver is currently on a trip
+    - `"Offline"`: Driver is not available
+
+  ### Response
+  ```json
+  {
+    "message": "Status updated"
+  }
+  ```
+
+  ### Test Script
+  ```javascript
+  if (res.getStatus() === 200) {
+    console.log('✅ Driver status updated successfully');
+  } else {
+    console.log('❌ Failed to update driver status');
+  }
+  ```
+
+  ### Common Workflows
+  1. **Start Trip**: Set status to "Busy"
+  2. **Complete Trip**: Set status to "Available"
+  3. **Driver Offline**: Set status to "Offline"
+}

@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Nasho Technologies Dispatch System API",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    "bruno.json"
+  ]
+}

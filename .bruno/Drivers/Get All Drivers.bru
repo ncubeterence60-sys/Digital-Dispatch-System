@@ -1,0 +1,53 @@
+meta {
+  name: Get All Drivers
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/drivers
+  body: none
+  auth: none
+}
+
+docs {
+  ## Get All Drivers
+
+  Retrieves a list of all drivers in the system with their current status and location information.
+
+  ### Response
+  ```json
+  [
+    {
+      "driver_id": 1,
+      "name": "John Doe",
+      "phone": "123-456-7890",
+      "email": "john@example.com",
+      "vehicle_info": "Toyota Camry",
+      "vehicle_make": "Toyota",
+      "vehicle_model": "Camry",
+      "status": "Available",
+      "lat": -20.15,
+      "lng": 28.58,
+      "created_at": "2024-01-01T00:00:00.000Z",
+      "updated_at": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+  ```
+
+  ### Test Script
+  ```javascript
+  if (res.getStatus() === 200) {
+    const drivers = res.getBody();
+    console.log(`✅ Retrieved ${drivers.length} drivers`);
+
+    // Count drivers by status
+    const statusCount = drivers.reduce((acc, driver) => {
+      acc[driver.status] = (acc[driver.status] || 0) + 1;
+      return acc;
+    }, {});
+
+    console.log('Driver status summary:', statusCount);
+  }
+  ```
+}

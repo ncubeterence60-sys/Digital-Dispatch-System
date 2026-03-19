@@ -1,0 +1,64 @@
+meta {
+  name: Get All Trips
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/trips
+  body: none
+  auth: none
+}
+
+docs {
+  ## Get All Trips
+
+  Retrieves a comprehensive list of all trips in the system with passenger details, status, and driver assignments.
+
+  ### Response
+  ```json
+  [
+    {
+      "trip_id": 1,
+      "pickup_location": "123 Main St, Bulawayo",
+      "dropoff_location": "456 Elm St, Bulawayo",
+      "passenger_name": "John Smith",
+      "passenger_phone": "0771234567",
+      "passenger_email": "john@example.com",
+      "status": "Pending",
+      "created_at": "2024-01-01T10:00:00.000Z",
+      "pickup_time": null,
+      "dropoff_time": null,
+      "distance_km": null,
+      "estimated_duration_minutes": null,
+      "actual_duration_minutes": null,
+      "fare": null,
+      "tip_amount": null,
+      "notes": "VIP customer",
+      "driver_id": 7
+    }
+  ]
+  ```
+
+  ### Status Values
+  - `Pending`: Trip created, waiting for driver assignment
+  - `In Progress`: Driver assigned and en route
+  - `Completed`: Trip finished successfully
+  - `Cancelled`: Trip cancelled
+
+  ### Test Script
+  ```javascript
+  if (res.getStatus() === 200) {
+    const trips = res.getBody();
+    console.log(`✅ Retrieved ${trips.length} trips`);
+
+    // Count trips by status
+    const statusCount = trips.reduce((acc, trip) => {
+      acc[trip.status] = (acc[trip.status] || 0) + 1;
+      return acc;
+    }, {});
+
+    console.log('Trip status summary:', statusCount);
+  }
+  ```
+}

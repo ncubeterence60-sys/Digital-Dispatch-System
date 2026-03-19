@@ -1,0 +1,80 @@
+meta {
+  name: Update Trip Status
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{base_url}}/trips/{{trip_id}}/status
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "status": "In Progress"
+  }
+}
+
+docs {
+  ## Update Trip Status
+
+  Changes the status of an existing trip to track its progress through the dispatch lifecycle.
+
+  ### URL Parameters
+  - `trip_id`: The ID of the trip to update
+
+  ### Request Body
+  - `status`: New status for the trip
+    - `"Pending"`: Initial status when trip is created
+    - `"In Progress"`: Driver has been assigned and is en route
+    - `"Completed"`: Trip has been successfully finished
+    - `"Cancelled"`: Trip has been cancelled
+
+  ### Response
+  ```json
+  {
+    "message": "Trip status updated"
+  }
+  ```
+
+  ### Test Script
+  ```javascript
+  if (res.getStatus() === 200) {
+    console.log('✅ Trip status updated successfully');
+  } else {
+    console.log('❌ Failed to update trip status');
+  }
+  ```
+
+  ### Trip Lifecycle Workflow
+
+  1. **Create Trip** → Status: `Pending`
+  2. **Assign Driver** → Status: `In Progress`
+  3. **Driver Arrives** → Status: `In Progress` (pickup confirmed)
+  4. **Trip Complete** → Status: `Completed`
+  5. **Cancel Trip** → Status: `Cancelled`
+
+  ### Status Change Examples
+
+  **Start Trip:**
+  ```json
+  {
+    "status": "In Progress"
+  }
+  ```
+
+  **Complete Trip:**
+  ```json
+  {
+    "status": "Completed"
+  }
+  ```
+
+  **Cancel Trip:**
+  ```json
+  {
+    "status": "Cancelled"
+  }
+  ```
+}

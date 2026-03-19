@@ -1,0 +1,51 @@
+meta {
+  name: Update Driver Location
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{base_url}}/drivers/{{driver_id}}/location
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "lat": -20.15,
+    "lng": 28.58
+  }
+}
+
+docs {
+  ## Update Driver Location
+
+  Updates the GPS coordinates of a specific driver for real-time tracking.
+
+  ### URL Parameters
+  - `driver_id`: The ID of the driver to update
+
+  ### Request Body
+  - `lat`: Latitude coordinate (decimal degrees)
+  - `lng`: Longitude coordinate (decimal degrees)
+
+  ### Example Coordinates
+  - **Bulawayo, Zimbabwe**: `{"lat": -20.15, "lng": 28.58}`
+  - **Harare, Zimbabwe**: `{"lat": -17.8252, "lng": 31.0335}`
+
+  ### Response
+  ```json
+  {
+    "message": "Location updated"
+  }
+  ```
+
+  ### Test Script
+  ```javascript
+  if (res.getStatus() === 200) {
+    console.log('✅ Driver location updated successfully');
+  } else {
+    console.log('❌ Failed to update driver location');
+  }
+  ```
+}

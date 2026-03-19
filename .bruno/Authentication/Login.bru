@@ -1,0 +1,48 @@
+meta {
+  name: Login
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{username}}",
+    "password": "{{password}}"
+  }
+}
+
+docs {
+  ## User Authentication
+
+  Authenticates a user and returns a success message.
+
+  ### Request Body
+  - `username`: User's username (default: admin)
+  - `password`: User's password (default: admin)
+
+  ### Response
+  ```json
+  {
+    "success": true,
+    "message": "Login successful!"
+  }
+  ```
+
+  ### Test Script
+  ```javascript
+  if (res.getStatus() === 200) {
+    const response = res.getBody();
+    if (response.success) {
+      console.log('✅ Login successful');
+    } else {
+      console.log('❌ Login failed:', response.message);
+    }
+  }
+  ```
+}

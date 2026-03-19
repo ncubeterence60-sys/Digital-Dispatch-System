@@ -1,0 +1,93 @@
+meta {
+  name: Create New Trip
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/trips
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "pickup_location": "123 Main Street, Bulawayo CBD",
+    "dropoff_location": "456 Park Road, Bulawayo",
+    "passenger_name": "Sarah Johnson",
+    "passenger_phone": "0778123456",
+    "passenger_email": "sarah@example.com",
+    "driver_id": {{driver_id}},
+    "notes": "Customer prefers quiet driver"
+  }
+}
+
+docs {
+  ## Create New Trip
+
+  Creates a new trip request in the dispatch system with passenger details and location information.
+
+  ### Request Body
+  - `pickup_location`: Full address where passenger will be picked up
+  - `dropoff_location`: Full address where passenger wants to go
+  - `passenger_name`: Name of the passenger (optional)
+  - `passenger_phone`: Contact phone number (optional)
+  - `passenger_email`: Contact email address (optional)
+  - `driver_id`: ID of assigned driver (optional - can be assigned later)
+  - `notes`: Special instructions or notes (optional)
+
+  ### Response
+  ```json
+  {
+    "message": "Trip created",
+    "trip_id": 5
+  }
+  ```
+
+  ### Test Script
+  ```javascript
+  if (res.getStatus() === 200) {
+    const response = res.getBody();
+    console.log(`✅ Trip created successfully with ID: ${response.trip_id}`);
+
+    // Store the trip ID for follow-up requests
+    bru.setVar('new_trip_id', response.trip_id);
+  } else {
+    console.log('❌ Failed to create trip');
+  }
+  ```
+
+  ### Common Trip Creation Scenarios
+
+  **Standard Trip:**
+  ```json
+  {
+    "pickup_location": "Shop A, Main Street",
+    "dropoff_location": "Office B, Central Ave",
+    "passenger_name": "John Doe",
+    "passenger_phone": "0771234567"
+  }
+  ```
+
+  **Airport Transfer:**
+  ```json
+  {
+    "pickup_location": "Joshua Mqabuko Nkomo International Airport",
+    "dropoff_location": "City Center Hotel, Bulawayo",
+    "passenger_name": "Business Traveler",
+    "passenger_phone": "0779876543",
+    "notes": "Flight arrives at 14:30, please wait at arrivals"
+  }
+  ```
+
+  **Corporate Account:**
+  ```json
+  {
+    "pickup_location": "Company HQ, 10th Avenue",
+    "dropoff_location": "Airport",
+    "passenger_name": "CEO - Monthly Account",
+    "passenger_email": "ceo@company.com",
+    "notes": "Charge to Company Account #12345"
+  }
+  ```
+}

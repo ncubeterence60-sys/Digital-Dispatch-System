@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Company Profile - Nasho Technologies Service Marketplace</title>
+  
+  <!-- CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  
+  <style>
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    .profile-container {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(25px);
+      border-radius: 24px;
+      padding: 3rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      max-width: 800px;
+      width: 90%;
+      color: white;
+    }
+    
+    .company-logo {
+      width: 120px;
+      height: 120px;
+      background: var(--primary-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 2rem;
+      box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
+      font-size: 3.5rem;
+    }
+    
+    .section-title {
+      color: rgba(255, 255, 255, 0.95);
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.5rem;
+    }
+    
+    .service-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    
+    .service-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+    
+    .service-card:hover {
+      transform: translateY(-8px);
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+    
+    .service-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+    
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      transition: background 0.3s ease;
+    }
+    
+    .contact-item:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .contact-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+    
+    .tech-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+    
+    .tech-badge {
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 25px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      backdrop-filter: blur(10px);
+    }
+    
+    .nav-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+    
+    .btn-back {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 0.875rem 2rem;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+    
+    .btn-back:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      color: white;
+    }
+    
+    @media (max-width: 768px) {
+      .profile-container {
+        padding: 2rem 1.5rem;
+        margin: 1rem;
+      }
+      
+      .service-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .nav-buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-container">
+    <!-- Company Logo -->
+    <div class="company-logo">
+      <i class="fas fa-concierge-bell text-white"></i>
+    </div>
+    
+    <!-- Company Header -->
+    <div class="text-center mb-5">
+      <h1 class="display-4 fw-bold mb-2" style="color: white; text-shadow: 0 4px 8px rgba(0,0,0,0.3);">Nasho Technologies</h1>
+      <p class="lead mb-0" style="color: rgba(255,255,255,0.9);">Service Marketplace Platform</p>
+      <p class="text-muted fs-5">Connecting service providers with customers across Zimbabwe</p>
+    </div>
+    
+    <!-- About Section -->
+    <div class="mb-5">
+      <h2 class="section-title">
+        <i class="fas fa-info-circle"></i>
+        About Us
+      </h2>
+      <p class="lead" style="color: rgba(255,255,255,0.9); line-height: 1.6;">
+        Nasho Technologies is a cutting-edge service dispatch platform designed to streamline service delivery. 
+        From transportation and delivery to specialized services like repairs and security, we connect verified providers 
+        with customers in real-time using advanced mapping and communication technology.
+      </p>
+    </div>
+    
+    <!-- Services Section -->
+    <div class="mb-5">
+      <h2 class="section-title">
+        <i class="fas fa-concierge-bell"></i>
+        Our Services
+      </h2>
+      <div class="service-grid">
+        <div class="service-card">
+          <div class="service-icon">🚗</div>
+          <h5>Transport</h5>
+          <p>Reliable rides across cities</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">📦</div>
+          <h5>Delivery</h5>
+          <p>Fast parcel delivery</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🔧</div>
+          <h5>Repair Services</h5>
+          <p>Emergency repairs</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🛡️</div>
+          <h5>Security</h5>
+          <p>Professional security</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🚑</div>
+          <h5>Medical</h5>
+          <p>Emergency medical</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Contact Section -->
+    <div class="mb-5">
+      <h2 class="section-title">
+        <i class="fas fa-address-book"></i>
+        Contact Information
+      </h2>
+      <div class="contact-item">
+        <div class="contact-icon">
+          <i class="fas fa-phone"></i>
+        </div>
+        <div>
+          <h6>+263 78 294 4287</h6>
+          <p>24/7 Dispatch Support</p>
+        </div>
+      </div>
+<div class="contact-item">
+        <div class="contact-icon">
+          <i class="fas fa-map-marker-alt"></i>
+        </div>
+        <div>
+          <h6>Bulawayo, Zimbabwe</h6>
+          <p>Operations Headquarters</p>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">
+          <i class="fas fa-envelope"></i>
+        </div>
+        <div>
+          <h6>nashotechnologies0023@gmail.com</h6>
+          <p>Official Email</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tech Stack -->
+    <div class="text-center mb-5">
+      <h2 class="section-title mx-auto">
+        <i class="fas fa-code"></i>
+        Powered By
+      </h2>
+      <div class="tech-stack">
+        <span class="tech-badge"><i class="fab fa-node-js me-1"></i>Node.js</span>
+        <span class="tech-badge"><i class="fas fa-socket me-1"></i>Socket.io</span>
+        <span class="tech-badge"><i class="fas fa-database me-1"></i>SQLite</span>
+        <span class="tech-badge"><i class="fas fa-chart-line me-1"></i>Real-time</span>
+        <span class="tech-badge"><i class="fas fa-mobile-alt me-1"></i>PWA Ready</span>
+      </div>
+    </div>
+    
+    <!-- Navigation -->
+    <div class="nav-buttons">
+      <a href="login.html" class="btn-back">
+        <i class="fas fa-sign-in-alt me-2"></i>Login to Dashboard
+      </a>
+      <a href="dashboard_fixed.html" class="btn-back">
+        <i class="fas fa-tachometer-alt me-2"></i>Live Dashboard
+      </a>
+      <a href="admin-dashboard.html" class="btn-back">
+        <i class="fas fa-chart-line me-2"></i>Admin Panel
+      </a>
+    </div>
+    
+    <!-- Footer -->
+    <div class="text-center mt-5 pt-4" style="border-top: 1px solid rgba(255,255,255,0.1);">
+      <p class="mb-1" style="color: rgba(255,255,255,0.6); font-size: 0.875rem;">
+        © 2026 Nasho Technologies. All rights reserved.
+      </p>
+      <p style="color: rgba(255,255,255,0.4); font-size: 0.75rem;">
+        <a href="#" style="color: inherit; text-decoration: none;">Privacy Policy</a> • 
+        <a href="#" style="color: inherit; text-decoration: none;">Terms of Service</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+

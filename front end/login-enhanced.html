@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Digital Dispatch</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
+  <!-- Tailwind + Components (best free fast system) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/noty@3.2.0-beta/lib/noty.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/noty@3.2.0-beta/lib/themes/sunset.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <!-- Include shared components -->
+  <script src="components.html"></script>
+  <style>
+    .particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
+    .particle { position: absolute; background: white; border-radius: 50%; opacity: 0.1; animation: float 20s infinite linear; }
+    @keyframes float { 0% { transform: translateY(100vh) rotate(0deg); opacity: 0; } 10% { opacity: 0.1; } 90% { opacity: 0.1; } 100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; } }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 relative overflow-hidden">
+  <!-- Animated Particles -->
+  <div class="particles" id="particles"></div>
+  
+  <!-- Navbar from components -->
+  
+  <div class="flex items-center justify-center min-h-screen px-4 py-12">
+    <div class="w-full max-w-md glass p-10 rounded-3xl shadow-2xl border-0 animate-fade-in">
+      <div class="text-center mb-12">
+        <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl flex items-center justify-center shadow-2xl hover:scale-110 transition-all duration-500">
+          <i class="fas fa-concierge-bell text-3xl text-white"></i>
+        </div>
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent mb-2">Welcome Back</h1>
+        <p class="text-white/70 text-lg">Sign in to your dispatch account</p>
+      </div>
+
+      <form id="loginForm" class="space-y-6">
+        <div>
+          <label class="block text-white font-semibold mb-3 flex items-center gap-2">
+            <i class="fas fa-user text-emerald-400"></i>
+            Username
+          </label>
+          <div class="relative">
+            <input 
+              type="text" 
+              id="username" 
+              required
+              class="w-full px-5 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/20 focus:outline-none transition-all duration-300 text-lg backdrop-blur-sm hover:bg-white/20" 
+              placeholder="admin"
+            >
+            <i class="fas fa-user absolute right-4 top-1/2 -translate-y-1/2 text-white/50"></i>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-white font-semibold mb-3 flex items-center gap-2">
+            <i class="fas fa-lock text-emerald-400"></i>
+            Password
+          </label>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="password" 
+              required
+              class="w-full px-5 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/20 focus:outline-none transition-all duration-300 text-lg backdrop-blur-sm hover:bg-white/20" 
+              placeholder="admin"
+            >
+            <i class="fas fa-eye absolute right-4 top-1/2 -translate-y-1/2 text-white/50 cursor-pointer hover:text-white" onclick="togglePassword()"></i>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-sm">
+          <label class="flex items-center text-white/80">
+            <input type="checkbox" class="w-4 h-4 bg-white/20 border-white/30 rounded focus:ring-emerald-400 mr-2">
+            <span>Remember me</span>
+          </label>
+          <a href="#" class="text-emerald-300 hover:text-emerald-200 font-semibold transition-colors">Forgot Password?</a>
+        </div>
+
+        <button 
+          type="submit" 
+          id="loginBtn"
+          class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-5 px-8 rounded-2xl text-xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all duration-500 flex items-center justify-center space-x-3 relative overflow-hidden group"
+        >
+          <span class="btn-text flex items-center space-x-3">
+            <i class="fas fa-sign-in-alt"></i>
+            <span>Sign In</span>
+          </span>
+          <div class="absolute inset-0 bg-white/20 scale-0 group-hover:scale-100 origin-center transition-transform duration-300 rounded-2xl"></div>
+        </button>
+      </form>
+
+      <div class="text-center mt-10 pt-8 border-t border-white/20">
+        <p class="text-white/60 mb-4">Demo Credentials</p>
+        <div class="flex flex-wrap gap-3 justify-center">
+          <div class="bg-white/10 px-4 py-2 rounded-xl backdrop-blur-sm">
+            <strong class="text-white block">admin</strong>
+            <small class="text-white/60">Username</small>
+          </div>
+          <div class="bg-white/10 px-4 py-2 rounded-xl backdrop-blur-sm">
+            <strong class="text-white block">admin</strong>
+            <small class="text-white/60">Password</small>
+          </div>
+        </div>
+        <p class="text-white/50 mt-6 text-xs">© 2024 Digital Dispatch. All rights reserved.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/noty@3.2.0-beta/lib/noty.min.js"></script>
+
+  <script>
+    // Particles animation
+    function createParticle() {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.width = particle.style.height = (Math.random() * 6 + 2) + 'px';
+      particle.style.animationDuration = (Math.random() * 15 + 10) + 's';
+      particle.style.animationDelay = Math.random() * 5 + 's';
+      document.getElementById('particles').appendChild(particle);
+      setTimeout(() => particle.remove(), 30000);
+    }
+    setInterval(createParticle, 300);
+
+    let passwordVisible = false;
+    function togglePassword() {
+      const pwd = document.getElementById('password');
+      passwordVisible = !passwordVisible;
+      pwd.type = passwordVisible ? 'text' : 'password';
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const loginBtn = document.getElementById("loginBtn");
+      
+      // Loading state
+      loginBtn.innerHTML = '<div class="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div> Signing in...';
+      loginBtn.disabled = true;
+      
+      try {
+        const response = await fetch('http://localhost:3000/login', {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+          notify('success', result.message);
+          setTimeout(() => {
+            localStorage.setItem('dispatchRole', 'dispatcher');
+            window.location.href = result.dashboard || '/dashboard_fixed.html';
+          }, 1500);
+        } else {
+          notify('error', result.message);
+        }
+      } catch (error) {
+        notify('error', 'Server offline. Run `node backend/server.js`');
+      } finally {
+        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt me-3"></i><span>Sign In</span>';
+        loginBtn.disabled = false;
+      }
+    });
+
+    // Fade in animation
+    document.documentElement.classList.add('animate-fade-in');
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,8 @@
+C:\Users\ncube\Desktop\Digital Dispatch system\DipatchSystem--force\obj\Debug\net10.0\rpswa.dswa.cache.json
+C:\Users\ncube\Desktop\Digital Dispatch system\DipatchSystem--force\obj\Debug\net10.0\DipatchSystem--force.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ncube\Desktop\Digital Dispatch system\DipatchSystem--force\obj\Debug\net10.0\DipatchSystem--force.AssemblyInfoInputs.cache
+C:\Users\ncube\Desktop\Digital Dispatch system\DipatchSystem--force\obj\Debug\net10.0\DipatchSystem--force.AssemblyInfo.cs
+C:\Users\ncube\Desktop\Digital Dispatch system\DipatchSystem--force\obj\Debug\net10.0\DipatchSystem--force.csproj.CoreCompileInputs.cache
+C:\Users\ncube\Desktop\Digital Dispatch system\DipatchSystem--force\obj\Debug\net10.0\DipatchSystem--force.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\ncube\Desktop\Digital Dispatch system\DipatchSystem--force\obj\Debug\net10.0\DipatchSystem--force.RazorAssemblyInfo.cache
+C:\Users\ncube\Desktop\Digital Dispatch system\DipatchSystem--force\obj\Debug\net10.0\DipatchSystem--force.RazorAssemblyInfo.cs

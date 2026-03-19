@@ -1,0 +1,23 @@
+# Render Deployment Configuration
+# This file tells Render how to deploy your Node.js app
+
+services:
+  - type: web
+    name: digital-dispatch-marketplace
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        fromSecret: PORT  # Render will provide this
+      # Add your Twilio credentials as secrets in Render dashboard
+      - key: TWILIO_ACCOUNT_SID
+        fromSecret: TWILIO_ACCOUNT_SID
+      - key: TWILIO_AUTH_TOKEN
+        fromSecret: TWILIO_AUTH_TOKEN
+      - key: TWILIO_PHONE_NUMBER
+        fromSecret: TWILIO_PHONE_NUMBER
+      - key: TWILIO_WHATSAPP_NUMBER
+        fromSecret: TWILIO_WHATSAPP_NUMBER

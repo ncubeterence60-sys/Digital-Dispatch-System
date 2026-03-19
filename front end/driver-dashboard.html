@@ -1,0 +1,315 @@
+<sript src="/socket.io/socket.io.js"></sript>
+<script> const socket = io(); 
+socket.on("new_trip", trip => { 
+  arlet("New trip request: " + trip.trip_id); 
+  // Optionally refresh trip list or show notification
+  console.log(trip);
+});
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Dashboard - Digital Dispatch</title>
+  
+  <!-- CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+  <link href="https://cdn.jsdelivr.net/npm/noty@3.2.0-beta/lib/noty.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/noty@3.2.0-beta/lib/themes/sunset.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  
+  <style>
+    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+    .status-btn { border-radius: 50px; font-size: 1.1rem; font-weight: 600; padding: 1rem 2rem; min-height: 60px; }
+    .status-online { background: #10b981 !important; border-color: #10b981 !important; }
+    .status-offline { background: #6b7280 !important; border-color: #6b7280 !important; }
+    #map { height: 50vh; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .trip-card { border-radius: 20px; margin-bottom: 1rem; backdrop-filter: blur(10px); background: rgba(255,255,255,0.9); transition: transform 0.2s; cursor: pointer; }
+    .trip-card:hover { transform: translateY(-5px); }
+    .action-btns { gap: 0.5rem; }
+    .action-btn { flex: 1; border-radius: 15px; font-weight: 600; padding: 0.75rem; }
+    .earnings-card { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border-radius: 20px; }
+    .navbar { box-shadow: 0 4px 20px rgba(0,0,0,0.1); backdrop-filter: blur(10px); }
+    @media (max-width: 768px) { #map { height: 40vh; } .trip-details { font-size: 0.9rem; } }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-white shadow-sm">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold text-primary">
+        <i class="fas fa-car-side me-2"></i>
+        Digital Dispatch Driver
+      </a>
+      <div class="d-flex align-items-center">
+        <div id="earningsBadge" class="me-3 fw-bold fs-5 text-success">$0.00 <small>today</small></div>
+        <span id="statusIndicator" class="badge bg-secondary fs-6 px-3 py-2 rounded-pill me-2">Offline</span>
+        <button id="statusBtn" class="btn status-offline status-btn text-white shadow-sm" onclick="toggleStatus()">
+          <i class="fas fa-power-off me-1"></i> Go Online
+        </button>
+        <button class="btn btn-outline-primary ms-2" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid px-4 py-3">
+    <!-- Map Section -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div id="map" class="w-100"></div>
+      </div>
+    </div>
+
+    <!-- Current Trip / Navigation -->
+    <div class="row mb-4" id="currentTripSection" style="display: none;">
+      <div class="col-12">
+        <div class="card trip-card shadow-lg">
+          <div class="card-body text-center p-4">
+            <h5 class="mb-3 text-primary"><i class="fas fa-route me-2"></i>Current Trip</h5>
+            <div id="tripDetails" class="mb-3"></div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-success flex-fill" onclick="arrivedPickup()">
+                <i class="fas fa-flag-checkered me-1"></i> Arrived Pickup
+              </button>
+              <button class="btn btn-warning flex-fill" onclick="completeTrip()">
+                <i class="fas fa-check-circle me-1"></i> Complete Trip
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Earnings Summary -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card earnings-card shadow-lg">
+          <div class="card-body text-center p-4">
+            <i class="fas fa-wallet fa-2x mb-3 opacity-75"></i>
+            <div class="h2 mb-1" id="totalEarnings">$0.00</div>
+            <div class="h5 mb-0" id="totalTrips">0 trips</div>
+            <small>Last refresh: <span id="lastRefresh"></span></small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Available Trips -->
+    <div class="row">
+      <div class="col-12">
+        <h5 class="mb-3"><i class="fas fa-list text-primary me-2"></i>Available Trips <span class="badge bg-primary" id="tripCount">0</span></h5>
+        <div id="tripsList" class="row"></div>
+        <div id="noTrips" class="text-center py-5 text-muted">
+          <i class="fas fa-road fa-3x mb-3 opacity-50"></i>
+          <h5>No trips available</h5>
+          <p>Go online to receive trip requests nearby</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/noty@3.2.0-beta/lib/noty.min.js"></script>
+
+  <script>
+    // Demo driver ID (sample data)
+    const DRIVER_ID = '3'; // Nasho Driver provider_id from sample data
+    let map, currentTrip = null, isOnline = false, routingControl = null;
+
+    // Init map
+    map = L.map('map').setView([-20.15, 28.58], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    // Driver marker
+    const driverIcon = L.divIcon({
+      className: 'driver-marker',
+      html: '<i class="fas fa-car text-orange fa-2x"></i>',
+      iconSize: [32, 32], iconAnchor: [16, 16]
+    });
+    const driverMarker = L.marker([-20.15, 28.58], { icon: driverIcon }).addTo(map);
+
+    async function toggleStatus() {
+      const btn = document.getElementById('statusBtn');
+      isOnline = !isOnline;
+      const status = isOnline ? 'online' : 'offline';
+      
+      // Get current location
+      navigator.geolocation.getCurrentPosition(pos => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        fetch(`${getApiUrl(`/api/drivers/${DRIVER_ID}/status`)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status, lat, lng })
+        })
+        .then(r => r.json())
+        .then(data => {
+          updateStatusUI(isOnline);
+          loadData();
+          new Noty({ text: `Status: ${isOnline ? 'Online ✅' : 'Offline' }`, type: isOnline ? 'success' : 'info' }).show();
+          driverMarker.setLatLng([lat, lng]);
+          map.panTo([lat, lng]);
+        });
+      }, err => new Noty({ text: 'Location access denied', type: 'error' }).show());
+    }
+
+    function updateStatusUI(online) {
+      const btn = document.getElementById('statusBtn');
+      const indicator = document.getElementById('statusIndicator');
+      btn.className = `btn status-btn text-white shadow-sm ${online ? 'status-online' : 'status-offline'}`;
+      btn.innerHTML = `<i class="fas fa-${online ? 'eye' : 'power-off'} me-1"></i>${online ? 'Go Offline' : 'Go Online'}`;
+      indicator.textContent = online ? 'Online' : 'Offline';
+      indicator.className = `badge ${online ? 'bg-success' : 'bg-secondary'} fs-6 px-3 py-2 rounded-pill me-2`;
+      document.getElementById('noTrips').style.display = online ? 'none' : 'block';
+    }
+
+    async function loadData() {
+      if (!isOnline) return;
+
+      // Load trips
+      fetch(`${getApiUrl(`/api/drivers/${DRIVER_ID}/trips`)}`)
+        .then(r => r.json())
+        .then(trips => renderTrips(trips));
+
+      // Load earnings
+      fetch(`${getApiUrl(`/api/drivers/${DRIVER_ID}/earnings`)}`)
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById('earningsBadge').textContent = `$${data.today_earnings} today`;
+          document.getElementById('totalEarnings').textContent = `$${data.total_earnings}`;
+          document.getElementById('totalTrips').textContent = `${data.total_trips} trips`;
+          document.getElementById('lastRefresh').textContent = new Date().toLocaleTimeString();
+        });
+
+      // Auto refresh every 10s
+    }
+
+    function renderTrips(trips) {
+      const container = document.getElementById('tripsList');
+      const countBadge = document.getElementById('tripCount');
+      countBadge.textContent = trips.length;
+
+      if (trips.length === 0) {
+        document.getElementById('noTrips').style.display = 'block';
+        container.innerHTML = '';
+        return;
+      }
+
+      document.getElementById('noTrips').style.display = 'none';
+      container.innerHTML = trips.map(trip => `
+        <div class="col-12">
+          <div class="card trip-card shadow-lg">
+            <div class="card-body p-4">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                  <h6 class="mb-1">${trip.user_name}</h6>
+                  <p class="text-muted mb-1">${trip.pickup_location || 'Current location'} → ${trip.dropoff_location || 'TBD'}</p>
+                  <small class="text-success fw-bold">${trip.user_phone}</small>
+                </div>
+                <span class="badge bg-warning text-dark">New</span>
+              </div>
+              <div class="action-btns d-flex gap-2">
+                <button class="btn btn-success action-btn" onclick="acceptTrip('${trip.trip_id}')">
+                  <i class="fas fa-check me-1"></i>Accept
+                </button>
+                <button class="btn btn-outline-secondary action-btn" onclick="rejectTrip('${trip.trip_id}', '${trip.user_phone}')">
+                  <i class="fas fa-times me-1"></i>Reject
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function acceptTrip(tripId) {
+      fetch(`${getApiUrl(`/api/drivers/${DRIVER_ID}/trips/${tripId}/accept`)}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            new Noty({ text: 'Trip accepted! Navigation starting...', type: 'success' }).show();
+            loadData(); // Refresh trips
+            // TODO: Load trip details, start navigation
+            showCurrentTrip({ trip_id: tripId });
+          }
+        });
+    }
+
+    function rejectTrip(tripId, phone) {
+      if (confirm('Reject this trip?')) {
+        fetch(`${getApiUrl(`/api/drivers/trips/${tripId}/reject`)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason: 'Not available now' })
+        }).then(() => {
+          new Noty({ text: 'Trip rejected', type: 'warning' }).show();
+          loadData();
+        });
+      }
+    }
+
+    function showCurrentTrip(trip) {
+      currentTrip = trip;
+      document.getElementById('currentTripSection').style.display = 'block';
+      // Add route to map if pickup/dropoff coords
+      // Simplified demo
+      document.getElementById('tripDetails').innerHTML = `
+        <div class="h5 mb-2">${currentTrip.passenger_name || 'Customer'}</div>
+        <div class="mb-3">${currentTrip.pickup_location} → ${currentTrip.dropoff_location}</div>
+        <div class="text-success fw-bold fs-5">ETA: Calculating...</div>
+      `;
+    }
+
+    function arrivedPickup() {
+      new Noty({ text: 'Arrived at pickup! Heading to destination', type: 'success' }).show();
+    }
+
+    function completeTrip() {
+      if (confirm('Complete this trip?')) {
+        // Update status to Completed
+        new Noty({ text: 'Trip completed! Earnings updated', type: 'success' }).show();
+        document.getElementById('currentTripSection').style.display = 'none';
+        loadData();
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('driverSession');
+      window.location.href = '/login.html';
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check if driver session
+      if (!localStorage.driverId) window.location.href = '/login.html';
+      
+      updateStatusUI(false);
+      setInterval(loadData, 10000);
+      
+      // Share location every 30s when online
+      setInterval(() => {
+        if (isOnline) navigator.geolocation.getCurrentPosition(pos => {
+          const lat = pos.coords.latitude, lng = pos.coords.longitude;
+          fetch(`${getApiUrl(`/api/drivers/${DRIVER_ID}/status`)}`, {
+            method: 'POST',
+            body: JSON.stringify({ status: 'online', lat, lng })
+          });
+          driverMarker.setLatLng([lat, lng]);
+        });
+      }, 30000);
+      
+      new Noty({ text: 'Welcome Driver! Tap "Go Online" to start receiving trips', type: 'info' }).show();
+    });
+  </script>
+</body>
+</html>
+
