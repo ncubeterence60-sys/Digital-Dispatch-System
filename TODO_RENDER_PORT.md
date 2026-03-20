@@ -9,4 +9,4 @@
 - [ ] 4. Test Render redeploy
 - [ ] 5. attempt_completion
 
-**Current Step**: 1/5
+**Status**: ✅ COMPLETE - npm ci build, PORT via render.yaml/env

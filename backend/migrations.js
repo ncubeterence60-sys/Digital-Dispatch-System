@@ -1,25 +1,19 @@
-// SQLite Migration Script for Node.js Backend
+// SQLite Migration Script for Node.js Backend - Better-SQLite3 Version
 // This script updates the dispatch_system.db database with new schema
 
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const path = require('path');
 
 const dbPath = path.join(__dirname, '..', 'dispatch_system.db');
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Error opening database:', err.message);
-    process.exit(1);
-  }
-  console.log('Connected to SQLite database');
-});
+const db = new Database(dbPath);
+console.log('Connected to SQLite database (better-sqlite3)');
 
-// Run migrations sequentially
-db.serialize(() => {
+try {
   console.log('Starting database migration...\n');
 
   // 1. Update Drivers table
   console.log('Updating Drivers table...');
-  db.run(`
+  db.exec(`
     CREATE TABLE IF NOT EXISTS drivers_new (
       driver_id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -36,44 +30,42 @@ db.serialize(() => {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
-  `, (err) => {
-    if (err) console.error('Error creating drivers_new table:', err.message);
-    else console.log('✓ Created drivers_new table');
-  });
+  `);
+  console.log('✓ Created drivers_new table');
 
   // 2. Copy existing data to new drivers table
-  db.run(`
-    INSERT INTO drivers_new (driver_id, name, phone, vehicle_info, status, lat, lng, created_at, updated_at)
-    SELECT driver_id, name, phone, vehicle_info, status, lat, lng, updated_at, updated_at
-    FROM drivers
-    WHERE NOT EXISTS (SELECT 1 FROM drivers_new WHERE driver_id = drivers.driver_id)
-  `, (err) => {
-    if (err && err.message.includes('no such table')) {
+  try {
+    db.prepare(`
+      INSERT INTO drivers_new (driver_id, name, phone, vehicle_info, status, lat, lng, created_at, updated_at)
+      SELECT driver_id, name, phone, vehicle_info, status, lat, lng, updated_at, updated_at
+      FROM drivers
+      WHERE NOT EXISTS (SELECT 1 FROM drivers_new WHERE driver_id = drivers.driver_id)
+    `).run();
+    console.log('✓ Migrated existing driver data');
+  } catch (err) {
+    if (err.message.includes('no such table')) {
       console.log('✓ No existing drivers to migrate');
-    } else if (err) {
-      console.error('Error copying drivers data:', err.message);
     } else {
-      console.log('✓ Migrated existing driver data');
+      console.error('Error copying drivers data:', err.message);
     }
-  });
+  }
 
   // 3. Drop old drivers table and rename
-  db.run(`DROP TABLE IF EXISTS drivers`, (err) => {
-    if (err && !err.message.includes('no such table')) {
+  try {
+    db.exec('DROP TABLE IF EXISTS drivers');
+    console.log('✓ Dropped old drivers table');
+  } catch (err) {
+    if (!err.message.includes('no such table')) {
       console.error('Error dropping old drivers table:', err.message);
-    } else {
-      console.log('✓ Dropped old drivers table');
     }
-  });
+  }
 
-  db.run(`ALTER TABLE drivers_new RENAME TO drivers`, (err) => {
-    if (err) console.error('Error renaming table:', err.message);
-    else console.log('✓ Renamed drivers_new to drivers');
-  });
+  db.exec('ALTER TABLE drivers_new RENAME TO drivers');
+  console.log('✓ Renamed drivers_new to drivers');
 
   // 4. Create Trips table
   console.log('\nCreating Trips table...');
-  db.run(`
+  db.exec(`
     CREATE TABLE IF NOT EXISTS trips (
       trip_id INTEGER PRIMARY KEY AUTOINCREMENT,
       pickup_location TEXT NOT NULL,
@@ -94,14 +86,12 @@ db.serialize(() => {
       driver_id INTEGER,
       FOREIGN KEY (driver_id) REFERENCES drivers(driver_id)
     )
-  `, (err) => {
-    if (err) console.error('Error creating trips table:', err.message);
-    else console.log('✓ Created trips table');
-  });
+  `);
+  console.log('✓ Created trips table');
 
-  // 5. Create Visits/Jobs table (if not exists)
+  // 5. Create Visits/Jobs table
   console.log('\nUpdating Jobs/Dispatches table...');
-  db.run(`
+  db.exec(`
     CREATE TABLE IF NOT EXISTS jobs (
       job_id INTEGER PRIMARY KEY AUTOINCREMENT,
       pickup TEXT NOT NULL,
@@ -112,83 +102,62 @@ db.serialize(() => {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (assigned_driver_id) REFERENCES drivers(driver_id)
     )
-  `, (err) => {
-    if (err) console.error('Error: jobs table issue:', err.message);
-    else console.log('✓ Jobs table confirmed');
-  });
+  `);
+  console.log('✓ Jobs table confirmed');
 
   // 6. Add indexes for better performance
   console.log('\nCreating indexes...');
+  const indexes = [
+    'CREATE INDEX IF NOT EXISTS idx_drivers_status ON drivers(status)',
+    'CREATE INDEX IF NOT EXISTS idx_drivers_phone ON drivers(phone)',
+    'CREATE INDEX IF NOT EXISTS idx_trips_driver_id ON trips(driver_id)',
+    'CREATE INDEX IF NOT EXISTS idx_trips_status ON trips(status)',
+    'CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status)'
+  ];
   
-  db.run(`CREATE INDEX IF NOT EXISTS idx_drivers_status ON drivers(status)`, (err) => {
-    if (err) console.error('Error creating driver status index:', err.message);
-    else console.log('✓ Created index on drivers.status');
-  });
-
-  db.run(`CREATE INDEX IF NOT EXISTS idx_drivers_phone ON drivers(phone)`, (err) => {
-    if (err) console.error('Error creating driver phone index:', err.message);
-    else console.log('✓ Created index on drivers.phone');
-  });
-
-  db.run(`CREATE INDEX IF NOT EXISTS idx_trips_driver_id ON trips(driver_id)`, (err) => {
-    if (err) console.error('Error creating trips driver index:', err.message);
-    else console.log('✓ Created index on trips.driver_id');
-  });
-
-  db.run(`CREATE INDEX IF NOT EXISTS idx_trips_status ON trips(status)`, (err) => {
-    if (err) console.error('Error creating trips status index:', err.message);
-    else console.log('✓ Created index on trips.status');
-  });
-
-  db.run(`CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status)`, (err) => {
-    if (err) console.error('Error creating jobs status index:', err.message);
-    else console.log('✓ Created index on jobs.status');
+  indexes.forEach((sql, i) => {
+    try {
+      db.exec(sql);
+      console.log(`✓ Created index ${i + 1}`);
+    } catch (err) {
+      console.error(`Error creating index ${i + 1}:`, err.message);
+    }
   });
 
   // 7. Insert sample data if needed
   console.log('\nInserting sample data...');
   
-  db.run(`
+  db.prepare(`
     INSERT OR IGNORE INTO drivers (name, phone, vehicle_info, status)
     VALUES ('John Doe', '123-456-7890', 'Toyota Camry', 'Available')
-  `, (err) => {
-    if (err) console.error('Error inserting John Doe:', err.message);
-    else console.log('✓ Sample driver John Doe confirmed');
-  });
+  `).run();
+  console.log('✓ Sample driver John Doe confirmed');
 
-  db.run(`
+  db.prepare(`
     INSERT OR IGNORE INTO drivers (name, phone, vehicle_info, status)
     VALUES ('Jane Smith', '098-765-4321', 'Ford F-150', 'Busy')
-  `, (err) => {
-    if (err) console.error('Error inserting Jane Smith:', err.message);
-    else console.log('✓ Sample driver Jane Smith confirmed');
-  });
+  `).run();
+  console.log('✓ Sample driver Jane Smith confirmed');
 
-  // Final callback
-  db.all(`SELECT COUNT(*) as count FROM drivers`, (err, rows) => {
-    if (err) {
-      console.error('\nError verifying migration:', err.message);
-    } else {
-      const driverCount = rows[0].count;
-      console.log('\n✅ Migration completed successfully!');
-      console.log(`Total drivers in database: ${driverCount}`);
-      console.log('\nDatabase schema is now updated with:');
-      console.log('  - Enhanced Drivers table with location tracking and vehicle details');
-      console.log('  - New Trips table for trip management');
-      console.log('  - Updated Jobs table structure');
-      console.log('  - Performance indexes on key columns');
-    }
-  });
-});
-
-// Close database connection after brief delay to allow queries to complete
-setTimeout(() => {
-  db.close((err) => {
-    if (err) {
-      console.error('Error closing database:', err.message);
-      process.exit(1);
-    }
+  // Final verification
+  const driverCount = db.prepare('SELECT COUNT(*) as count FROM drivers').get().count;
+  console.log('\n✅ Migration completed successfully!');
+  console.log(`Total drivers in database: ${driverCount}`);
+  console.log('\nDatabase schema updated with:');
+  console.log('  - Enhanced Drivers table (location, vehicle details)');
+  console.log('  - Trips table for trip management');
+  console.log('  - Jobs table structure');
+  console.log('  - Performance indexes');
+  
+} catch (err) {
+  console.error('\n❌ Migration failed:', err.message);
+  process.exit(1);
+} finally {
+  // Close database connection
+  setTimeout(() => {
+    db.close();
     console.log('\nDatabase connection closed.');
     process.exit(0);
-  });
-}, 2000);
+  }, 1000);
+}
+
