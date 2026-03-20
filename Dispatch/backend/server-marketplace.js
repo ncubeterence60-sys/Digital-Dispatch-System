@@ -202,7 +202,7 @@ app.get('/company', (req, res) => res.json({
 // 404 fallback
 app.use((req, res) => res.sendFile(path.join(__dirname, '..', '..', 'front end', 'dashboard_fixed.html')));
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`🚀 Digital Dispatch running on http://localhost:${PORT}`);
   console.log('📱 Mock WhatsApp/SMS, live Socket.io');
