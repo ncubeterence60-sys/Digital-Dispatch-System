@@ -7,7 +7,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const path = require('path');
 require('dotenv').config();
 
@@ -61,11 +61,10 @@ app.get('/', (req, res) => {
 });
 
 // DB
-const db = new sqlite3.Database('./dispatch_system.db', (err) => {
-  console.log(err ? 'DB Error: ' + err.message : 'Connected to dispatch_system.db');
-});
+const db = new Database('./dispatch_system.db');
+console.log('Connected to dispatch_system.db');
 
-db.serialize(() => {
+// better-sqlite3 sync - no serialize needed
   // Users table for login
   db.run(`CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -104,14 +103,23 @@ db.serialize(() => {
   )`);
 
   // Sample data
-  db.run(`INSERT OR IGNORE INTO service_types (service_type_id, name, icon) VALUES (1, 'Transport', '🚗')`);
-  db.run(`INSERT OR IGNORE INTO service_providers (provider_id, name, phone, service_type_id, status, lat, lng, rating) VALUES 
-    (1, 'John Doe', '+263712345678', 1, 'Available', -17.8252, 31.0335, 4.8),
-    (2, 'Sarah Smith', '+263772345678', 1, 'Busy', -17.82, 31.04, 4.9)`);
-
-  db.run(`INSERT OR IGNORE INTO service_requests (request_id, user_name, user_phone, service_type_id, pickup_location, dropoff_location, status) VALUES 
-    (1, 'Tinashe', '+263712987654', 1, 'Harare CBD', 'Airport', 'Pending')`);
-});
+try {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      role TEXT DEFAULT 'Dispatcher',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+  db.exec("INSERT OR IGNORE INTO users (username, password_hash, role) VALUES ('admin', 'admin', 'Admin')");
+  
+  // ... other tables/data similar with db.exec()
+  console.log('DB schema ready');
+} catch (err) {
+  console.error('DB setup error:', err);
+}
 
 // Login route (for new UI)
 app.post('/login', (req, res) => {

@@ -7,7 +7,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const path = require('path');
 require('dotenv').config();
 
@@ -56,9 +56,8 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, '..', 'front end')));
 
 // DB
-const db = new sqlite3.Database('./dispatch_system.db', (err) => {
-  console.log(err ? 'DB Error: ' + err.message : 'Connected to dispatch_system.db');
-});
+const db = new Database('./dispatch_system.db');
+console.log('Connected to dispatch_system.db');
 
 // Login route (for new UI)
 app.post('/login', (req, res) => {
