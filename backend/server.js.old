@@ -75,7 +75,9 @@ app.post('/login', (req, res) => {
   });
 });
 
-db.serialize(() => {
+// Fixed db.serialize() - run migrations synchronously
+db.serialize({}); // Empty options object for better-sqlite3 v9+
+(() => {
   // Users table for login
   db.run(`CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY AUTOINCREMENT,

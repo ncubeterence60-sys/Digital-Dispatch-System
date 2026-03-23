@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dispatcher - Digital Dispatch</title>
+  <!-- PWA -->
+  <link rel="manifest" href="manifest-dispatcher.json">
+  <!-- Core Styles -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/uber-style.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root { font-family: 'Inter', sans-serif; }
+    body { background: #f8fafc; }
+    .status-online { background: #10b981 !important; }
+    .map-container { height: 400px; background: linear-gradient(45deg, #e3f2fd, #bbdefb); border-radius: 16px; }
+    .request-card { transition: all 0.3s; }
+    .request-card:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .sidebar { background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); }
+  </style>
+</head>
+<body>
+  <!-- Top Bar -->
+  <header class="bg-white shadow-sm p-3 sticky-top">
+    <div class="d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center">
+        <button class="btn btn-link p-0 me-3 d-lg-none" onclick="toggleSidebar()">
+          <i class="fas fa-bars fa-lg"></i>
+        </button>
+        <div>
+          <div class="fw-bold text-primary fs-5">Dispatch Control</div>
+          <small class="text-muted">Live Operations (12 active)</small>
+        </div>
+      </div>
+      <div class="d-flex align-items-center">
+        <div class="status-dot bg-success me-2" style="width:12px;height:12px;"></div>
+        <span class="badge bg-success fs-6 me-3">Online</span>
+        <button class="btn btn-sm btn-outline-primary" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sidebar (mobile + desktop) -->
+  <div id="sidebar" class="sidebar position-fixed start-0 top-0 h-100 shadow-lg d-none d-lg-block w-280">
+    <div class="p-4">
+      <h6 class="fw-bold text-primary mb-4 border-bottom pb-3">Operations</h6>
+      <ul class="list-unstyled">
+        <li><a href="#live-map" class="sidebar-link active d-flex align-items-center mb-3 p-2 rounded-3"><i class="fas fa-map fa-fw me-3"></i>Live Map</a></li>
+        <li><a href="#requests" class="sidebar-link d-flex align-items-center mb-3 p-2 rounded-3"><i class="fas fa-list fa-fw me-3"></i>Pending (5)</a></li>
+        <li><a href="#drivers" class="sidebar-link d-flex align-items-center mb-3 p-2 rounded-3"><i class="fas fa-car fa-fw me-3"></i>Drivers (8)</a></li>
+        <li><a href="#history" class="sidebar-link d-flex align-items-center p-2 rounded-3"><i class="fas fa-history fa-fw me-3"></i>History</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Mobile sidebar overlay -->
+  <div id="sidebarOverlay" class="d-none d-lg-none position-fixed inset-0 bg-dark bg-opacity-50 z-40"></div>
+
+  <main class="p-4 pt-0">
+    <!-- Live Map -->
+    <div id="live-map" class="card shadow-lg border-0 rounded-3 mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center py-3">
+        <h6 class="mb-0 fw-bold"><i class="fas fa-map-marked-alt text-primary me-2"></i>Live Operations Map</h6>
+        <div>
+          <span class="badge bg-success fs-6 me-2">12 Active</span>
+          <button class="btn btn-sm btn-outline-secondary" onclick="zoomToActive()">Zoom Active</button>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="map-container d-flex align-items-center justify-content-center">
+          <div class="text-center">
+            <i class="fas fa-map fa-3x text-primary mb-3 opacity-75"></i>
+            <h5 class="text-primary">Live GPS Tracking</h5>
+            <small class="text-muted">Drivers & requests realtime location</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Pending Requests -->
+      <div class="col-lg-8">
+        <div class="card shadow-lg border-0 rounded-3">
+          <div class="card-header py-3">
+            <div class="d-flex justify-content-between">
+              <h6 class="mb-0 fw-bold"><i class="fas fa-clock text-warning me-2"></i>Pending Requests <span class="badge bg-warning ms-2" id="pendingCount">3</span></h6>
+              <div class="d-flex gap-2">
+                <select class="form-select form-select-sm" onchange="filterRequests(this.value)">
+                  <option>All</option>
+                  <option>Within 5km</option>
+                  <option>High Priority</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="list-group list-group-flush" id="requestsList">
+            <!-- Dynamic -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Controls -->
+      <div class="col-lg-4">
+        <!-- Drivers Status -->
+        <div class="card shadow border-0 rounded-3 mb-4">
+          <div class="card-header py-3">
+            <h6 class="mb-0 fw-bold"><i class="fas fa-car-side me-2 text-success"></i>Online Drivers</h6>
+          </div>
+          <div class="card-body p-0">
+            <div id="driversList" style="max-height: 300px; overflow-y: auto;">
+              <!-- Dynamic drivers -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card shadow border-0 rounded-3">
+          <div class="card-header py-3">
+            <h6 class="mb-0"><i class="fas fa-bolt me-2 text-primary"></i>Quick Actions</h6>
+          </div>
+          <div class="card-body p-3">
+            <button class="btn btn-success w-100 mb-2" onclick="bulkAssign()">
+              <i class="fas fa-users me-2"></i>Bulk Assign Nearest
+            </button>
+            <button class="btn btn-primary w-100 mb-2" onclick="broadcastMessage()">
+              <i class="fas fa-bullhorn me-2"></i>Broadcast Alert
+            </button>
+            <button class="btn btn-info w-100" onclick="openCommunications()">
+              <i class="fas fa-comments me-2"></i>Communications
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/realtime.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Dispatcher realtime engine
+    const realtime = new RealtimeEngine('dispatcher');
+    
+    // Mock data for demo
+    const pendingRequests = [
+      {
+        id: 123,
+        customer: 'Sarah M.',
+        phone: '+263774567890',
+        pickup: 'Avondale Shops',
+        dropoff: 'Borrowdale',
+        distance: '4.2km',
+        priority: 'normal',
+        driversNearby: 3
+      }
+    ];
+    
+    const onlineDrivers = [
+      { name: 'John Doe', status: 'available', trips: 3, rating: 4.8 },
+      { name: 'Mike Wilson', status: 'busy', trips: 1, rating: 4.9 }
+    ];
+
+    function renderRequests() {
+      document.getElementById('requestsList').innerHTML = pendingRequests.map(req => `
+        <div class="list-group-item list-group-item-action p-4 request-card">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <div class="fw-bold fs-5 mb-1">${req.pickup} → ${req.dropoff}</div>
+              <small class="text-muted">${req.distance} • ${req.customer} (${req.phone})</small>
+            </div>
+            <span class="badge bg-${req.priority === 'high' ? 'danger' : 'warning'}">${req.driversNearby} nearby</span>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-success flex-grow-1" onclick="assignNearest(${req.id})">
+              Assign Nearest
+            </button>
+            <button class="btn btn-sm btn-outline-primary" onclick="contactCustomer(${req.id})">
+              Contact
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="snooze(${req.id})">
+              Later
+            </button>
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('pendingCount').textContent = pendingRequests.length;
+    }
+
+    function renderDrivers() {
+      document.getElementById('driversList').innerHTML = onlineDrivers.map(driver => `
+        <div class="d-flex align-items-center p-3 border-bottom">
+          <div class="flex-shrink-0">
+            <div class="status-dot bg-${driver.status === 'available' ? 'success' : 'warning'}" style="width:10px;height:10px;"></div>
+          </div>
+          <div class="flex-grow-1 ms-3">
+            <div class="fw-semibold">${driver.name}</div>
+            <small>${driver.trips} trips • ${driver.rating}★</small>
+          </div>
+          <button class="btn btn-sm btn-outline-primary">Ping</button>
+        </div>
+      `).join('');
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      sidebar.classList.toggle('d-block');
+      overlay.classList.toggle('d-block');
+    }
+
+    function filterRequests(type) {
+      // Filter logic
+      showNoty(`Filtered: ${type}`, 'info');
+    }
+
+    function assignNearest(id) {
+      realtime.requestTrip(id);
+      showNoty('Assigned to nearest driver', 'success');
+    }
+
+    function contactCustomer(id) {
+      showNoty('WhatsApp opened', 'info');
+    }
+
+    function snooze(id) {
+      showNoty('Request snoozed', 'info');
+    }
+
+    function bulkAssign() {
+      showNoty('Bulk assignment complete', 'success');
+    }
+
+    function broadcastMessage() {
+      showNoty('Broadcast sent to all drivers', 'info');
+    }
+
+    function openCommunications() {
+      showNoty('Communications panel opened', 'info');
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = '/login.html';
+    }
+
+    function zoomToActive() {
+      showNoty('Zoomed to active area', 'info');
+    }
+
+    // Realtime updates every 10s
+    setInterval(() => {
+      renderRequests();
+      renderDrivers();
+    }, 10000);
+
+    // Init
+    renderRequests();
+    renderDrivers();
+  </script>
+</body>
+</html>
+
