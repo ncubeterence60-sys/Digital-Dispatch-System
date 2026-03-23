@@ -2,13 +2,17 @@
   "name": "digital-dispatch-system",
   "version": "1.0.0",
   "description": "Uber-style real-time dispatch platform",
-  "main": "backend/server.js",
+  "main": "Dispatch/backend/server-marketplace.js",
   "scripts": {
-    "start": "node backend/server.js",
-    "dev": "node backend/server.js",
+    "start": "node Dispatch/backend/server-marketplace.js",
+    "dev": "nodemon Dispatch/backend/server-marketplace.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["dispatch", "uber", "real-time"],
+  "keywords": [
+    "dispatch",
+    "uber",
+    "real-time"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",

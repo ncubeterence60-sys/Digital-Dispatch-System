@@ -5,10 +5,9 @@
   "main": "Dispatch/backend/server-marketplace.js",
   "scripts": {
     "start": "node Dispatch/backend/server-marketplace.js",
-    "dev": "node Dispatch/backend/server-marketplace.js",
+    "dev": "nodemon Dispatch/backend/server-marketplace.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-
   "keywords": [
     "dispatch",
     "uber",
