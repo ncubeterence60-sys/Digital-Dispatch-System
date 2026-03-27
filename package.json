@@ -1,27 +1,26 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "digital-dispatch-desktop",
+  "name": "digital-dispatch-marketplace",
   "version": "1.0.0",
-  "description": "Digital Dispatch E-Hailing Desktop App",
-  "main": "main.js",
+  "description": "Digital Dispatch E-Hailing Server (Render Ready)",
   "scripts": {
     "start": "node Dispatch/backend/server-marketplace.js",
-    "marketplace": "node Dispatch/backend/server-marketplace.js",
-    "dev": "concurrently \"npm run marketplace\" \"wait-on http://localhost:3000 && npm run start\"",
-    "electron": "electron .",
-    "dist": "electron-builder",
-    "test": "echo \"Error: no test specified\" && exit 1",
-"postinstall":"node backend/migrations.js","heroku-postbuild":"npm rebuild better-sqlite3"
+    "dev": "nodemon Dispatch/backend/server-marketplace.js",
+    "build": "npm rebuild better-sqlite3",
+    "postinstall": "npm rebuild better-sqlite3 --build-from-source"
   },
   "keywords": [
     "dispatch",
     "uber",
     "e-hailing",
-    "desktop"
+    "marketplace"
   ],
   "author": "Digital Dispatch",
   "license": "ISC",
   "type": "commonjs",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
     "better-sqlite3": "^12.8.0",
     "body-parser": "^1.20.2",
@@ -34,24 +33,6 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "electron": "^41.0.3",
-    "electron-builder": "^25.1.8",
     "nodemon": "^3.1.14"
-  },
-  "build": {
-    "appId": "com.digitaldispatch.desktop",
-    "productName": "Digital Dispatch",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "**/*",
-      "dispatch_system.db",
-      "!**/node_modules/better-sqlite3/build/Release/**"
-    ],
-    "win": {
-      "target": "nsis",
-      "icon": "front end/favicon.ico"
-    }
   }
 }
