@@ -5,9 +5,10 @@ services:
   - type: web
     name: digital-dispatch-marketplace
     runtime: node
-    buildCommand: | 
+    buildCommand: |
       npm ci
-      npm install better-sqlite3 --build-from-source
+      rm -rf node_modules/better-sqlite3/build/Release/*
+      npm rebuild better-sqlite3
     startCommand: npm start
     envVars:
       - key: NODE_ENV

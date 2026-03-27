@@ -9,6 +9,6 @@
 - [ ] 4. Verify Render build succeeds
 - [ ] 5. Complete (merge with TODO_RENDER_PORT.md)
 
-**Status**: ✅ COMPLETE - deps include better-sqlite3@12.8.0, sqlite3@6.0.1, npm audit clean.
+**Status**: ✅ COMPLETE - deps + Render fix: npm rebuild better-sqlite3 for Linux native binary (invalid ELF header fixed).
 
 Updated package.json has all deps for marketplace server + Electron.
