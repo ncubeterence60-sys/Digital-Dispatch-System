@@ -1,7 +1,7 @@
 {
   "name": "digital-dispatch-system",
   "version": "1.0.0",
-  "description": "Uber-style real-time dispatch platform",
+  "description": "real-time dispatch platform",
   "main": "Dispatch/backend/server-marketplace.js",
   "scripts": {
     "start": "node Dispatch/backend/server-marketplace.js",

@@ -1,1 +1,300 @@
-[FULL HTML]
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Dispatch - On-Demand Service Marketplace</title>
+  <meta name="description" content="Digital Dispatch: Uber-style platform for transport, delivery, repairs, security. Book verified providers instantly.">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/uber-style.css">
+  <style>
+    :root { --primary: #667eea; --secondary: #764ba2; }
+    body { font-family: 'Inter', sans-serif; }
+    .hero { min-height: 100vh; background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+    .hero-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; opacity: 0.3; }
+    .btn-hero { background: white; color: var(--primary); font-weight: 700; border: none; padding: 1rem 3rem; border-radius: 50px; box-shadow: 0 10px 30px rgba(255,255,255,0.3); transition: all 0.3s; font-size: 1.1rem; }
+    .btn-hero:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(255,255,255,0.4); color: var(--primary); }
+    .nav-link { color: rgba(255,255,255,0.9); }
+    .nav-link:hover { color: white; }
+    .feature-card { height: 100%; }
+    footer { background: #1f2937; color: white; }
+    @media (max-width: 768px) { .hero h1 { font-size: 2.5rem; } }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark position-absolute top-0 w-100" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); z-index: 10;">
+    <div class="container">
+      <a class="navbar-brand fw-bold fs-4" href="#hero">
+        <i class="fas fa-concierge-bell me-2 text-white"></i>Digital Dispatch
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#features">Services</a></li>
+          <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="#driver">Drivers</a></li>
+          <li class="nav-item"><a class="nav-link" href="company-profile.html">Company</a></li>
+          <li class="nav-item"><a class="nav-link" href="pricing.html">Pricing</a></li>
+          <li class="nav-item ms-3">
+            <div class="d-flex gap-2">
+              <a class="btn btn-light btn-sm px-4 rounded-pill fw-semibold" href="login.html?role=customer">Customer</a>
+              <a class="btn btn-outline-light btn-sm px-4 rounded-pill fw-semibold" href="driver-app.html">Driver</a>
+              <a class="btn btn-primary btn-sm px-4 rounded-pill fw-semibold" href="login.html?role=admin">Admin</a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section id="hero" class="hero d-flex align-items-center position-relative overflow-hidden">
+    <video autoplay muted loop class="hero-video" playsinline>
+      <source src="data:video/mp4;base64,//mock-video" type="video/mp4">
+    </video>
+    <div class="container position-relative z-10">
+      <div class="row align-items-center">
+        <div class="col-lg-6">
+          <h1 class="display-1 fw-bold mb-4 animate__animated animate__fadeInUp" style="color: white; text-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+            On-Demand<br>
+            <span class="text-warning animate__animated animate__pulse infinite">Services</span>
+          </h1>
+          <p class="lead fs-4 mb-5 animate__animated animate__fadeInUp animate__delay-1s" style="color: rgba(255,255,255,0.95);">
+            Transport, delivery, repairs, security - verified providers at your fingertips. 
+            Real-time booking and tracking.
+          </p>
+          <div class="d-flex flex-wrap gap-3 animate__animated animate__fadeInUp animate__delay-2s">
+            <a href="login.html?role=customer" class="btn-hero">
+              <i class="fas fa-search me-2"></i>Book Service
+            </a>
+            <a href="driver-app.html" class="btn-hero btn-outline-white">
+              <i class="fas fa-car me-2"></i>Earn as Driver
+            </a>
+          </div>
+        </div>
+        <div class="col-lg-6 text-center animate__animated animate__fadeInRight animate__delay-1s">
+          <div class="bg-white bg-opacity-10 backdrop-blur-xl rounded-5 p-5 shadow-2xl">
+            <h4 class="fw-bold mb-4">Services Available</h4>
+            <div class="d-grid gap-3">
+              <div class="d-flex align-items-center p-3 bg-white bg-opacity-20 rounded-3">
+                <div class="bg-success rounded-circle me-3 p-2"><i class="fas fa-taxi text-white"></i></div>
+                <div>Rides</div>
+              </div>
+              <div class="d-flex align-items-center p-3 bg-white bg-opacity-20 rounded-3">
+                <div class="bg-primary rounded-circle me-3 p-2"><i class="fas fa-box text-white"></i></div>
+                <div>Delivery</div>
+              </div>
+              <div class="d-flex align-items-center p-3 bg-white bg-opacity-20 rounded-3">
+                <div class="bg-warning rounded-circle me-3 p-2"><i class="fas fa-tools text-white"></i></div>
+                <div>Repairs</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="py-5">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold mb-3">Why Choose Digital Dispatch?</h2>
+        <p class="lead col-lg-8 mx-auto text-muted">Modern platform built for speed, reliability, and scale.</p>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="card feature-card h-100 border-0 shadow-lg rounded-4 p-5 hover-lift">
+            <div class="bg-primary bg-gradient rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+              <i class="fas fa-bolt text-white fs-4"></i>
+            </div>
+            <h4 class="h3 fw-bold mb-3">Instant Matching</h4>
+            <p class="lead text-muted mb-0">AI-powered matching finds the perfect provider in seconds. No waiting.</p>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card feature-card h-100 border-0 shadow-lg rounded-4 p-5 hover-lift">
+            <div class="bg-success bg-gradient rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+              <i class="fas fa-shield-alt text-white fs-4"></i>
+            </div>
+            <h4 class="h3 fw-bold mb-3">Verified Providers</h4>
+            <p class="lead text-muted mb-0">Background checked, licensed, insured. Your safety first.</p>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card feature-card h-100 border-0 shadow-lg rounded-4 p-5 hover-lift">
+            <div class="bg-info bg-gradient rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+              <i class="fas fa-mobile-alt text-white fs-4"></i>
+            </div>
+            <h4 class="h3 fw-bold mb-3">Mobile First</h4>
+            <p class="lead text-muted mb-0">PWA app works offline. Install on home screen, lightning fast.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="py-5 bg-light">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6">
+          <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDUwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjZmFmYWZhIiByeD0iMjQiLz4KPHRleHQgeD0iMjUwIiB5PSIyMDAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzY2N2VlYSI+VEVDSE5PTE9HWUdyYWNoPC90ZXh0Pgo8L3N2Zz4K" alt="Technology Stack" class="img-fluid rounded-4 shadow-lg">
+        </div>
+        <div class="col-lg-6">
+          <h2 class="display-5 fw-bold mb-4">Built for Zimbabwe</h2>
+          <p class="lead text-muted mb-4">Connecting Bulawayo, Harare, and beyond with reliable service infrastructure.</p>
+          <div class="row g-3">
+            <div class="col-12">
+              <div class="d-flex align-items-center">
+                <div class="bg-primary rounded-circle me-3 p-2"><i class="fas fa-globe text-white"></i></div>
+                <h5 class="fw-bold mb-0">Nationwide Coverage</h5>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="d-flex align-items-center">
+                <div class="bg-success rounded-circle me-3 p-2"><i class="fas fa-mobile-alt text-white"></i></div>
+                <h5 class="fw-bold mb-0">Eco System Ready</h5>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="d-flex align-items-center">
+                <div class="bg-warning rounded-circle me-3 p-2"><i class="fas fa-users text-white"></i></div>
+                <h5 class="fw-bold mb-0">Verified Network</h5>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Driver CTA -->
+  <section id="driver" class="py-5">
+    <div class="container text-center">
+      <h2 class="display-5 fw-bold mb-5">Drivers Wanted</h2>
+      <p class="lead mb-5 fs-4">Earn $500-2000 weekly. Flexible hours. Be your own boss.</p>
+      <div class="row g-4 justify-content-center">
+        <div class="col-md-3">
+          <div class="card border-0 shadow-lg rounded-4 p-4">
+            <div class="bg-success bg-gradient rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+              <i class="fas fa-dollar-sign text-white fs-4"></i>
+            </div>
+            <h4 class="fw-bold">80% Commission</h4>
+            <p class="text-muted">Keep most of every trip</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card border-0 shadow-lg rounded-4 p-4">
+            <div class="bg-primary bg-gradient rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+              <i class="fas fa-calendar-check text-white fs-4"></i>
+            </div>
+            <h4 class="fw-bold">Weekly Pay</h4>
+            <p class="text-muted">Direct to EcoCash/Bank</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card border-0 shadow-lg rounded-4 p-4">
+            <div class="bg-info bg-gradient rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+              <i class="fas fa-headset text-white fs-4"></i>
+            </div>
+            <h4 class="fw-bold">24/7 Support</h4>
+            <p class="text-muted">Dedicated dispatch team</p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-5">
+        <a href="driver-app.html" class="btn btn-warning btn-lg px-6 py-4 fw-bold rounded-pill shadow-lg fs-5">
+          <i class="fas fa-arrow-right me-2"></i>Join 500+ Drivers
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+      <h2 class="display-5 fw-bold mb-4">Ready to book?</h2>
+      <p class="lead mb-5 fs-4">Download our PWA or login to get started instantly.</p>
+      <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
+        <a href="login.html?role=customer" class="btn btn-light btn-lg px-5 py-3 me-md-3 mb-3 mb-md-0">
+          <i class="fas fa-user me-2"></i>Customer Login
+        </a>
+        <a href="driver-app.html" class="btn btn-outline-light btn-lg px-5 py-3">
+          <i class="fas fa-car me-2"></i>Driver Signup
+        </a>
+        <a href="login.html?role=admin" class="btn btn-outline-light btn-lg px-5 py-3 ms-md-3">
+          <i class="fas fa-tachometer-alt me-2"></i>Admin Portal
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold mb-3">
+            <i class="fas fa-concierge-bell me-2 text-primary"></i>Digital Dispatch
+          </h5>
+          <p class="text-muted">Zimbabwe's leading on-demand service platform. Connecting customers and providers seamlessly.</p>
+        </div>
+        <div class="col-lg-2 col-md-6 mb-4">
+          <h6 class="fw-bold mb-3">Company</h6>
+          <ul class="list-unstyled">
+            <li><a href="company-profile.html" class="text-muted text-decoration-none">About Us</a></li>
+            <li><a href="services.html" class="text-muted text-decoration-none">Services</a></li>
+            <li><a href="driver-app.html" class="text-muted text-decoration-none">Driver App</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-md-6 mb-4">
+          <h6 class="fw-bold mb-3">Pricing</h6>
+          <ul class="list-unstyled">
+            <li><a href="pricing.html" class="text-muted text-decoration-none">Customer</a></li>
+            <li><a href="pricing.html#driver" class="text-muted text-decoration-none">Driver</a></li>
+            <li><a href="pricing.html#business" class="text-muted text-decoration-none">Business</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-md-6 mb-4">
+          <h6 class="fw-bold mb-3">Support</h6>
+          <ul class="list-unstyled">
+            <li><a href="contact.html" class="text-muted text-decoration-none">Contact</a></li>
+            <li><a href="privacy.html" class="text-muted text-decoration-none">Privacy</a></li>
+            <li><a href="terms.html" class="text-muted text-decoration-none">Terms</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-md-6 mb-4">
+          <h6 class="fw-bold mb-3">Quick Access</h6>
+          <ul class="list-unstyled">
+            <li><a href="login.html?role=customer" class="text-muted text-decoration-none">Customer Login</a></li>
+            <li><a href="login.html?role=driver" class="text-muted text-decoration-none">Driver Login</a></li>
+            <li><a href="login.html?role=admin" class="text-muted text-decoration-none">Admin Login</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-top pt-4 mt-4 text-center text-muted small">
+        &copy; 2024 Digital Dispatch System. All rights reserved. Made with ❤️ in Zimbabwe.
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Smooth scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+  </script>
+</body>
+</html>

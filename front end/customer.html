@@ -4,9 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Customer App - Digital Dispatch</title>
-  <!-- PWA -->
   <link rel="manifest" href="manifest-customer.json">
-  <!-- Core -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="css/uber-style.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -16,132 +14,215 @@
     .glass-card { background: rgba(255,255,255,0.25); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); }
     .tracking-card { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
     .status-progress { height: 8px; border-radius: 10px; }
+    .payment-card { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
   </style>
 </head>
 <body>
   <div class="container-fluid p-4 pb-5">
-    <!-- Header -->
-    <header class="glass-card rounded-4 p-4 mb-4 shadow-lg">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <div class="h4 mb-1 fw-bold text-white">Digital Dispatch</div>
-          <div class="text-white-50">Your ride is on the way</div>
-        </div>
-        <div class="text-center">
-          <div class="status-dot bg-success mb-1" style="width:16px;height:16px;"></div>
-          <div class="text-white small">Live tracking</div>
-        </div>
+    <!-- Request Form / Tracking Toggle -->
+    <div id="requestForm" class="glass-card rounded-4 p-4 mb-4 shadow-lg">
+      <div class="h4 mb-3 text-white fw-bold">Book a Ride</div>
+      <div class="mb-3">
+        <input type="text" class="form-control rounded-3 mb-2" id="pickup" placeholder="Pickup location (e.g. Harare CBD)">
+        <input type="text" class="form-control rounded-3" id="dropoff" placeholder="Dropoff location (e.g. Airport)">
       </div>
-    </header>
-
-    <!-- Trip Status -->
-    <div class="tracking-card rounded-4 p-5 mb-4 text-center shadow-2xl">
-      <div class="mb-4">
-        <i class="fas fa-car fa-4x mb-3 opacity-75"></i>
-        <h2 class="mb-1">Driver Arriving</h2>
-        <div class="text-white-50 mb-3">John Doe • Toyota Corolla • White</div>
-        <div class="status-progress bg-white bg-opacity-30 mx-auto" style="width: 200px;">
-          <div class="bg-white status-progress-fill" style="width: 65%;"></div>
-        </div>
-        <small class="text-white-50">ETA 4 min • 1.2 km away</small>
+      <button class="btn btn-light w-100 py-3 mb-3 rounded-pill fw-bold" onclick="getEstimate()">
+        <i class="fas fa-calculator me-2"></i>Get Estimate
+      </button>
+      <div id="estimateResult" class="alert alert-success d-none">
+        <strong id="estPrice"></strong> | <span id="estDistance"></span>
       </div>
-      <div class="row g-3 text-center">
+      <div class="row g-2">
         <div class="col">
-          <button class="btn btn-light btn-lg px-4 rounded-pill">
-            <i class="fas fa-phone me-1"></i>Call
+          <button class="btn btn-success w-100 py-3 rounded-pill fw-bold" onclick="payWithPaynow()">
+            <i class="fas fa-mobile-alt me-2"></i>Paynow
           </button>
         </div>
         <div class="col">
-          <button class="btn btn-light btn-lg px-4 rounded-pill">
-            <i class="fas fa-comment me-1"></i>Message
-          </button>
-        </div>
-        <div class="col">
-          <button class="btn btn-outline-light btn-lg px-4 rounded-pill">
-            SOS
+          <button class="btn btn-warning w-100 py-3 rounded-pill fw-bold text-dark" onclick="payWithEcocash()">
+            <i class="fas fa-wallet me-2"></i>Ecocash
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Map -->
-    <div class="glass-card rounded-4 p-3 mb-4 shadow-lg">
-      <div class="mb-3 d-flex justify-content-between">
-        <h6 class="mb-0 text-white fw-bold">Live Tracking</h6>
-        <button class="btn btn-sm btn-outline-light">Recenter</button>
-      </div>
-      <div class="map-placeholder rounded-3" style="height: 300px;">
-        <i class="fas fa-map fa-2x text-white-50 mb-2 d-block"></i>
-        Your driver is approaching
-      </div>
-    </div>
-
-    <!-- Trip Details -->
-    <div class="glass-card rounded-4 p-4 shadow-lg">
-      <h6 class="mb-4 text-white fw-bold">Trip Details</h6>
-      <div class="row mb-3">
-        <div class="col-3 text-white-50 text-center"><i class="fas fa-flag-checkered fa-lg"></i></div>
-        <div class="col-9">
-          <div class="fw-bold text-white fs-6 mb-1">Harare CBD → Borrowdale</div>
-          <small class="text-white-50">7.3 km • 18 min</small>
+    <!-- Trip Status (hidden initially) -->
+    <div id="tripStatus" class="d-none">
+      <div class="tracking-card rounded-4 p-5 mb-4 text-center shadow-2xl">
+        <div class="mb-4">
+          <i class="fas fa-car fa-4x mb-3 opacity-75" id="statusIcon"></i>
+          <h2 class="mb-1" id="statusText">Driver Arriving</h2>
+          <div class="text-white-50 mb-3" id="etaText">ETA 4 min</div>
+          <div class="status-progress bg-white bg-opacity-30 mx-auto" style="width: 200px;">
+            <div class="bg-white status-progress-fill" id="progressFill" style="width: 65%;"></div>
+          </div>
+        </div>
+        <div id="driverDetails" class="text-white-50 mb-3">John Doe</div>
+        <div class="row g-3 text-center">
+          <div class="col">
+            <button class="btn btn-light btn-lg px-4 rounded-pill" onclick="callDriver()">
+              <i class="fas fa-phone me-1"></i>Call
+            </button>
+          </div>
+          <div class="col">
+            <button class="btn btn-light btn-lg px-4 rounded-pill" onclick="messageDriver()">
+              <i class="fas fa-comment me-1"></i>Message
+            </button>
+          </div>
         </div>
       </div>
-      <div class="row mb-4">
-        <div class="col-3 text-white-50 text-center"><i class="fas fa-wallet fa-lg"></i></div>
-        <div class="col-9">
-          <div class="fw-bold text-white fs-5 mb-1">$22.50</div>
-          <small class="text-success fw-semibold">Base + distance fee</small>
+
+      <!-- Trip Details -->
+      <div class="glass-card rounded-4 p-4 shadow-lg mb-4">
+        <h6 class="mb-4 text-white fw-bold">Trip Details</h6>
+        <div class="row mb-3">
+          <div class="col-3 text-white-50 text-center"><i class="fas fa-flag-checkered fa-lg"></i></div>
+          <div class="col-9">
+            <div class="fw-bold text-white fs-6 mb-1" id="tripRoute">Harare CBD → Airport</div>
+            <small class="text-white-50" id="tripInfo">7.3 km • 18 min</small>
+          </div>
+        </div>
+        <div class="row mb-4">
+          <div class="col-3 text-white-50 text-center"><i class="fas fa-wallet fa-lg"></i></div>
+          <div class="col-9">
+            <div class="fw-bold text-success fs-5 mb-1" id="tripPrice">$8.50</div>
+            <small class="text-white-50" id="paymentStatus">Payment: Pending</small>
+          </div>
         </div>
       </div>
-      <div class="d-grid gap-2">
-        <button class="btn btn-warning text-dark fw-semibold py-3 rounded-pill">
-          <i class="fas fa-share me-2"></i>Share Trip
-        </button>
-        <button class="btn btn-outline-light py-3 rounded-pill">
-          Rate Driver Later
-        </button>
+
+      <!-- Map Placeholder -->
+      <div class="glass-card rounded-4 p-3 mb-4 shadow-lg">
+        <div class="mb-3 d-flex justify-content-between">
+          <h6 class="mb-0 text-white fw-bold">Live Tracking</h6>
+          <button class="btn btn-sm btn-outline-light" onclick="recenterMap()">Recenter</button>
+        </div>
+        <div class="map-placeholder rounded-3" style="height: 300px;">
+          <i class="fas fa-map fa-2x text-white-50 mb-2 d-block"></i>
+          Driver location updating...
+        </div>
       </div>
     </div>
-
-    <!-- Bottom Navigation -->
-    <nav class="fixed-bottom bg-white shadow-lg rounded-top-4 p-2">
-      <div class="d-flex justify-content-around">
-        <a href="#" class="btn btn-lg p-3 text-decoration-none">
-          <i class="fas fa-home fa-lg mb-1 d-block text-primary"></i>Home
-        </a>
-        <a href="#" class="btn btn-lg p-3 text-decoration-none active">
-          <i class="fas fa-route fa-lg mb-1 d-block text-success"></i>Current
-        </a>
-        <a href="#" class="btn btn-lg p-3 text-decoration-none">
-          <i class="fas fa-history fa-lg mb-1 d-block"></i>History
-        </a>
-        <a href="#" class="btn btn-lg p-3 text-decoration-none">
-          <i class="fas fa-crown fa-lg mb-1 d-block text-warning"></i>Upgrade
-        </a>
-      </div>
-    </nav>
   </div>
 
-  <!-- Scripts -->
   <script src="/socket.io/socket.io.js"></script>
   <script src="js/realtime.js"></script>
   <script>
-    // Customer realtime
     const realtime = new RealtimeEngine('customer');
-    
-    // Update ETA every 10s
-    setInterval(() => {
-      const eta = Math.floor(Math.random() * 3) + 2;
-      document.querySelector('.text-white-50').innerHTML = `ETA ${eta} min • ${1.5 - eta/10 * 0.3} km away`;
-      document.querySelector('.status-progress-fill').style.width = `${70 + Math.random() * 20}%`;
-    }, 10000);
+    let currentTripId = null;
 
-    // Realtime trip updates
-    socket.on('tripUpdate', data => {
-      // Animate status change
-      showNoty(`Your trip: ${data.status}`, 'info');
+    async function getEstimate() {
+      const pickup = document.getElementById('pickup').value || 'Harare CBD';
+      const dropoff = document.getElementById('dropoff').value || 'Airport';
+      const estRes = document.getElementById('estimateResult');
+      try {
+        const res = await fetch('/customers/estimate', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({pickup_location: pickup, dropoff_location: dropoff})
+        });
+        const data = await res.json();
+        document.getElementById('estPrice').textContent = `$${data.estimated_price}`;
+        document.getElementById('estDistance').textContent = `${data.distance_km} km`;
+        estRes.classList.remove('d-none');
+      } catch (e) {
+        document.getElementById('estPrice').textContent = '$8.50';
+        document.getElementById('estDistance').textContent = '5.2 km';
+        estRes.classList.remove('d-none');
+      }
+    }
+
+    async function payWithPaynow() {
+      await initiatePayment('paynow');
+    }
+
+    async function payWithEcocash() {
+      await initiatePayment('ecocash');
+    }
+
+    async function initiatePayment(method) {
+      const estPrice = document.getElementById('estPrice').textContent.replace('$', '');
+      const pickup = document.getElementById('pickup').value || 'Harare CBD';
+      const dropoff = document.getElementById('dropoff').value || 'Airport';
+      const msisdn = prompt('Enter phone number for payment:');
+      if (!msisdn) return;
+
+      try {
+        const res = await fetch('/customers/request', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            user_name: 'Customer',
+            user_phone: msisdn,
+            pickup_location: pickup,
+            dropoff_location: dropoff,
+            estimated_price: estPrice
+          })
+        });
+        const tripData = await res.json();
+        currentTripId = tripData.trip_id;
+
+        const paymentRes = await fetch('/payments/initiate', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({trip_id: currentTripId, method, amount: estPrice, msisdn})
+        });
+        const paymentData = await paymentRes.json();
+        showNoty(`Payment initiated TX${paymentData.transaction_id.slice(-6)}`, 'info');
+
+        // Poll status
+        setTimeout(pollPayment, 3000, paymentData.payment_id);
+        document.getElementById('requestForm').classList.add('d-none');
+        document.getElementById('tripStatus').classList.remove('d-none');
+      } catch (e) {
+        showNoty('Error booking trip', 'error');
+      }
+    }
+
+    async function pollPayment(paymentId) {
+      const res = await fetch(`/payments/${paymentId}/status`);
+      const data = await res.json();
+      document.getElementById('paymentStatus').textContent = `Payment: ${data.status.toUpperCase()}`;
+      if (data.status === 'paid') {
+        showNoty('Payment successful! Driver assigned soon.', 'success');
+        updateStatus('Payment Confirmed');
+      } else {
+        setTimeout(() => pollPayment(paymentId), 2000);
+      }
+    }
+
+    function updateStatus(status) {
+      document.getElementById('statusText').textContent = status;
+      // Animate progress
+      const progress = {pending:20, arriving:50, picked_up:80, completed:100};
+      document.getElementById('progressFill').style.width = progress[status.toLowerCase()] + '%';
+    }
+
+    // Mock updates
+    setInterval(() => {
+      const statuses = ['arriving', 'picked_up', 'completed'];
+      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+      updateStatus(randomStatus);
+      document.getElementById('etaText').textContent = `ETA ${Math.floor(Math.random()*5)+1} min`;
+    }, 8000);
+
+    function callDriver() { showNoty('Calling driver...', 'info'); }
+    function messageDriver() { showNoty('Messaging driver...', 'info'); }
+    function recenterMap() { showNoty('Map recentered', 'info'); }
+
+    function showNoty(msg, type = 'info') {
+      // Simple toast
+      const toast = document.createElement('div');
+      toast.className = `alert alert-${type} position-fixed`;
+      toast.style.cssText = 'top:20px;right:20px;z-index:9999;width:300px';
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    realtime.socket.on('paymentStatus', data => {
+      document.getElementById('paymentStatus').textContent = `Payment: ${data.status.toUpperCase()}`;
     });
   </script>
 </body>
 </html>
-

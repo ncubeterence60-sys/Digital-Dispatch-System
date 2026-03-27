@@ -1,11 +1,11 @@
 const express = require('express');
 const Database = require('better-sqlite3');
-const db = new Database('../dispatch_system.db');
+const db = new Database('../../dispatch_system.db');
 
 const router = express.Router();
 
 /**
- * Update driver status (online/offline) and location - uses service_providers table
+ * Update driver status (online/offline) and location
  */
 router.post('/:driverId/status', (req, res) => {
   const { driverId } = req.params;
@@ -15,32 +15,31 @@ router.post('/:driverId/status', (req, res) => {
     return res.status(400).json({ error: 'Status must be online or offline' });
   }
 
-  const providerStatus = status === 'online' ? 'Available' : 'Offline';
+  const dbStatus = status === 'online' ? 'Available' : 'Offline';
   try {
-    const sql = 'UPDATE service_providers SET status = ?, lat = ?, lng = ?, updated_at = CURRENT_TIMESTAMP WHERE provider_id = ?';
-    const stmt = db.prepare(sql);
-    const result = stmt.run(providerStatus, lat || null, lng || null, driverId);
+    const stmt = db.prepare('UPDATE drivers SET status = ?, lat = ?, lng = ?, updated_at = CURRENT_TIMESTAMP WHERE driver_id = ?');
+    const result = stmt.run(dbStatus, lat || null, lng || null, driverId);
     if (result.changes === 0) return res.status(404).json({ error: 'Driver not found' });
-    res.json({ success: true, status: providerStatus, location: { lat, lng } });
+    res.json({ success: true, status: dbStatus });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 /**
- * Get pending trips for driver (service_requests transport type unassigned)
+ * Get nearby pending trips
  */
 router.get('/:driverId/trips', (req, res) => {
   const { driverId } = req.params;
   try {
-    const driverStmt = db.prepare('SELECT lat, lng FROM service_providers WHERE provider_id = ?');
-    const driver = driverStmt.get(driverId);
+    const driver = db.prepare('SELECT lat, lng FROM drivers WHERE driver_id = ?').get(driverId);
     if (!driver) return res.status(404).json({ error: 'Driver not found' });
 
-    // Nearby pending Transport requests (within 20km approx)
-    const sql = 'SELECT request_id as trip_id, user_name, user_phone, pickup_location, dropoff_location, lat as pickup_lat, lng as pickup_lng, status FROM service_requests WHERE service_type_id = 1 AND status = "Pending" AND provider_id IS NULL ORDER BY created_at DESC LIMIT 5';
-    const stmt = db.prepare(sql);
-    const trips = stmt.all();
+    const trips = db.prepare(`
+      SELECT trip_id, pickup_location, dropoff_location, passenger_name, passenger_phone, 
+             pickup_lat, pickup_lng, status, fare as estimated_price
+      FROM trips WHERE status = 'pending' AND driver_id IS NULL ORDER BY created_at DESC LIMIT 5
+    `).all();
     res.json(trips);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -53,15 +52,42 @@ router.get('/:driverId/trips', (req, res) => {
 router.post('/:driverId/trips/:tripId/accept', (req, res) => {
   const { driverId, tripId } = req.params;
   try {
-    const sql = 'UPDATE service_requests SET provider_id = ?, status = "DriverArriving", updated_at = CURRENT_TIMESTAMP WHERE request_id = ? AND status IN ("Pending", "SearchingForDriver")';
-    const stmt = db.prepare(sql);
+    const stmt = db.prepare('UPDATE trips SET driver_id = ?, status = "arriving" WHERE trip_id = ? AND status = "pending"');
     const result = stmt.run(driverId, tripId);
-    if (result.changes === 0) return res.status(404).json({ error: 'Trip not found or already assigned' });
-    // Set driver busy
-    const driverStmt = db.prepare('UPDATE service_providers SET status = "Busy" WHERE provider_id = ?');
-    driverStmt.run(driverId);
-    global.emitTripUpdate && global.emitTripUpdate(tripId, 'DriverArriving');
-    res.json({ success: true, message: 'Trip accepted - Driver arriving', status: 'DriverArriving' });
+    if (result.changes === 0) return res.status(404).json({ error: 'Trip not found or assigned' });
+    db.prepare('UPDATE drivers SET status = "Busy" WHERE driver_id = ?').run(driverId);
+    global.io.emit('tripUpdate', { tripId, status: 'arriving' });
+    res.json({ success: true, status: 'arriving' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * Pickup confirmed
+ */
+router.post('/:driverId/trips/:tripId/pickup', (req, res) => {
+  const { driverId, tripId } = req.params;
+  try {
+    db.prepare('UPDATE trips SET status = "picked_up" WHERE trip_id = ? AND driver_id = ?').run(tripId, driverId);
+    global.io.emit('tripUpdate', { tripId, status: 'picked_up' });
+    res.json({ success: true, status: 'picked_up' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * Complete trip + set actual fare
+ */
+router.post('/:driverId/trips/:tripId/complete', (req, res) => {
+  const { driverId, tripId } = req.params;
+  const { actual_fare } = req.body;
+  try {
+    db.prepare('UPDATE trips SET status = "completed", fare = ?, completed_at = CURRENT_TIMESTAMP WHERE trip_id = ? AND driver_id = ?').run(actual_fare, tripId, driverId);
+    db.prepare('UPDATE drivers SET status = "Available" WHERE driver_id = ?').run(driverId);
+    global.io.emit('tripUpdate', { tripId, status: 'completed' });
+    res.json({ success: true, status: 'completed' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -74,36 +100,28 @@ router.post('/trips/:tripId/reject', (req, res) => {
   const { tripId } = req.params;
   const { reason } = req.body;
   try {
-    const sql = "UPDATE service_requests SET status = 'Pending', provider_id = NULL, updated_at = CURRENT_TIMESTAMP WHERE request_id = ?";
-    const stmt = db.prepare(sql);
-    const result = stmt.run(tripId);
-    if (result.changes === 0) return res.status(404).json({ error: 'Trip not found' });
-    res.json({ success: true, message: 'Trip rejected', reason: reason });
+    db.prepare("UPDATE trips SET status = 'pending', driver_id = NULL WHERE trip_id = ?").run(tripId);
+    res.json({ success: true, reason });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 /**
- * Get driver earnings (completed Transport requests)
+ * Earnings
  */
 router.get('/:driverId/earnings', (req, res) => {
   const { driverId } = req.params;
   try {
-    const sql = `
-      SELECT 
-        COALESCE(SUM(total_price), 0) as total_earnings,
-        COALESCE(SUM(CASE WHEN date(updated_at) = date('now') THEN total_price END), 0) as today_earnings,
-        COUNT(*) as total_trips
-      FROM service_requests 
-      WHERE provider_id = ? AND service_type_id = 1 AND status = 'Completed'
-    `;
-    const stmt = db.prepare(sql);
-    const earnings = stmt.get(driverId);
+    const data = db.prepare(`
+      SELECT COALESCE(SUM(fare), 0) as total, 
+             COALESCE(SUM(CASE WHEN date(completed_at) = date('now') THEN fare END), 0) as today,
+             COUNT(*) as trips FROM trips WHERE driver_id = ? AND status = 'completed'
+    `).get(driverId);
     res.json({
-      today_earnings: parseFloat(earnings.today_earnings || 0).toFixed(2),
-      total_earnings: parseFloat(earnings.total_earnings || 0).toFixed(2),
-      total_trips: earnings.total_trips || 0
+      total_earnings: parseFloat(data.total).toFixed(2),
+      today_earnings: parseFloat(data.today).toFixed(2),
+      total_trips: data.trips || 0
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -111,4 +129,3 @@ router.get('/:driverId/earnings', (req, res) => {
 });
 
 module.exports = router;
-

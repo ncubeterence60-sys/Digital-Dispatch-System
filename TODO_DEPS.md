@@ -9,6 +9,6 @@
 - [ ] 4. Verify Render build succeeds
 - [ ] 5. Complete (merge with TODO_RENDER_PORT.md)
 
-**Current Step**: 1/5
+**Status**: ✅ COMPLETE - deps include better-sqlite3@12.8.0, sqlite3@6.0.1, npm audit clean.
 
-**Note**: Most critical missing dep is sqlite3 (used by server-marketplace.js DB).
+Updated package.json has all deps for marketplace server + Electron.
