@@ -5,11 +5,11 @@ const db = new Database('../../dispatch_system.db');
 const router = express.Router();
 
 /**
- * Update driver status (online/offline) and location
+ * Update driver status (online/offline) and location - Emit to customers
  */
 router.post('/:driverId/status', (req, res) => {
   const { driverId } = req.params;
-  const { status, lat, lng } = req.body;
+  const { status, lat, lng, heading = 0 } = req.body;
 
   if (!['online', 'offline'].includes(status)) {
     return res.status(400).json({ error: 'Status must be online or offline' });
@@ -17,9 +17,23 @@ router.post('/:driverId/status', (req, res) => {
 
   const dbStatus = status === 'online' ? 'Available' : 'Offline';
   try {
-    const stmt = db.prepare('UPDATE drivers SET status = ?, lat = ?, lng = ?, updated_at = CURRENT_TIMESTAMP WHERE driver_id = ?');
-    const result = stmt.run(dbStatus, lat || null, lng || null, driverId);
+    const stmt = db.prepare('UPDATE drivers SET status = ?, lat = ?, lng = ?, heading = ?, updated_at = CURRENT_TIMESTAMP WHERE driver_id = ?');
+    const result = stmt.run(dbStatus, lat || null, lng || null, heading, driverId);
     if (result.changes === 0) return res.status(404).json({ error: 'Driver not found' });
+    
+    // Emit real-time location to all customers (room-based in production)
+    if (global.io && lat && lng) {
+      global.io.emit('driverLocation', {
+        driverId,
+        lat: parseFloat(lat),
+        lng: parseFloat(lng),
+        heading: parseFloat(heading),
+        status: dbStatus,
+        timestamp: new Date().toISOString()
+      });
+      console.log(`📍 Emitted driver ${driverId} location to ${global.io.engine.clientsCount} clients`);
+    }
+    
     res.json({ success: true, status: dbStatus });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -56,7 +70,7 @@ router.post('/:driverId/trips/:tripId/accept', (req, res) => {
     const result = stmt.run(driverId, tripId);
     if (result.changes === 0) return res.status(404).json({ error: 'Trip not found or assigned' });
     db.prepare('UPDATE drivers SET status = "Busy" WHERE driver_id = ?').run(driverId);
-    global.io.emit('tripUpdate', { tripId, status: 'arriving' });
+    global.io.emit('tripUpdate', { tripId, status: 'arriving', driverId });
     res.json({ success: true, status: 'arriving' });
   } catch (err) {
     res.status(500).json({ error: err.message });
