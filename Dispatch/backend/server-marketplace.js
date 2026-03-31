@@ -92,7 +92,6 @@ const serviceTypeStmt = db.prepare(`INSERT OR IGNORE INTO service_types (service
 serviceTypeStmt.run('Transport', 'taxi');
 console.log('Service type seeded successfully:', {service_type_id: 1, name: 'Transport', icon: 'taxi'});
 
-
 try {
   db.exec(`INSERT OR IGNORE INTO service_providers (provider_id, name, phone, service_type_id, status, lat, lng, rating) VALUES (1, 'John Doe', '+263712345678', 1, 'Available', -17.8252, 31.0335, 4.8), (2, 'Sarah Smith', '+263772345678', 1, 'Busy', -17.82, 31.04, 4.9)`);
 } catch (e) { console.log('Providers already exist'); }
@@ -207,7 +206,7 @@ app.get('/company', (req, res) => res.json({
   stats: { activeDrivers: 12, activeTrips: 3, totalRevenue: '$2450' }
 }));
 
-res.sendFile(path.join(__dirname, '..', '..', 'public', 'dashboard_fixed.html')));
+app.use((req, res) => res.sendFile(path.join(__dirname, '..', '..', 'public', 'dashboard_fixed.html')));
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
@@ -215,4 +214,3 @@ server.listen(PORT, () => {
   console.log('📱 Mock WhatsApp/SMS, live Socket.io');
   console.log('Login: http://localhost:${PORT}/login.html');
 });
-
