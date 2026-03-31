@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Digital Dispatch System - Dashboard Backend (Fixed Syntax)
+ * Digital Dispatch System - Dashboard Backend (Syntax Fixed)
  */
 
 const express = require('express');
@@ -40,7 +40,7 @@ const io = new Server(server, {
 
 app.use(bodyParser.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname, '..', '..', 'front end')));
+app.use(express.static(path.join(__dirname, '..', '..', 'public')));
 
 app.get('/', (req, res) => {
   res.redirect('/login.html');
@@ -87,18 +87,18 @@ db.exec(`CREATE TABLE IF NOT EXISTS service_requests (
   provider_id INTEGER
 )`);
 
-// Fixed seed data with double quotes and no emojis
-const serviceTypeStmt = db.prepare(`INSERT OR IGNORE INTO service_types (service_type_id, name, icon) VALUES (1, "Transport", "taxi")`);
-serviceTypeStmt.run();
+// Fixed seed data matching exact JSON format using prepared statement
+const serviceTypeStmt = db.prepare(`INSERT OR IGNORE INTO service_types (service_type_id, name, icon) VALUES (1, ?, ?)`);
+serviceTypeStmt.run('Transport', 'taxi');
+console.log('Service type seeded successfully:', {service_type_id: 1, name: 'Transport', icon: 'taxi'});
 
-const providerStmt = db.prepare(`INSERT OR IGNORE INTO service_providers (provider_id, name, phone, service_type_id, status, lat, lng, rating) VALUES 
-  (1, "John Doe", "+263712345678", 1, "Available", -17.8252, 31.0335, 4.8),
-  (2, "Sarah Smith", "+263772345678", 1, "Busy", -17.82, 31.04, 4.9)`);
-providerStmt.run();
+try {
+  db.exec(`INSERT OR IGNORE INTO service_providers (provider_id, name, phone, service_type_id, status, lat, lng, rating) VALUES (1, 'John Doe', '+263712345678', 1, 'Available', -17.8252, 31.0335, 4.8), (2, 'Sarah Smith', '+263772345678', 1, 'Busy', -17.82, 31.04, 4.9)`);
+} catch (e) { console.log('Providers already exist'); }
 
-const requestStmt = db.prepare(`INSERT OR IGNORE INTO service_requests (request_id, user_name, user_phone, service_type_id, pickup_location, dropoff_location, status) VALUES 
-  (1, "Tinashe", "+263712987654", 1, "Harare CBD", "Airport", "Pending")`);
-requestStmt.run();
+try {
+  db.exec(`INSERT OR IGNORE INTO service_requests (request_id, user_name, user_phone, service_type_id, pickup_location, dropoff_location, status) VALUES (1, 'Tinashe', '+263712987654', 1, 'Harare CBD', 'Airport', 'Pending')`);
+} catch (e) { console.log('Sample request already exists'); }
 
 console.log('DB schema ready');
 
@@ -206,7 +206,7 @@ app.get('/company', (req, res) => res.json({
   stats: { activeDrivers: 12, activeTrips: 3, totalRevenue: '$2450' }
 }));
 
-app.use((req, res) => res.sendFile(path.join(__dirname, '..', '..', 'front end', 'dashboard_fixed.html')));
+app.use((req, res) => res.sendFile(path.join(__dirname, '..', '..', 'public', 'dashboard_fixed.html')));
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

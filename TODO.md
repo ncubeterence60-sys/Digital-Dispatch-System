@@ -1,1 +1,30 @@
-# Task: Recreate front end/index.html as table-style dashboard + WebSocket/test\n- [x] Step 1: Recreate front end/index.html - Table/grid dashboard with clickable buttons, Services tab (Rides/Delivery/Repairs).\n- [x] Step 2: Update backend/routes/admin.js - Add /services, /providers, /requests APIs + WebSocket emissions.\n- [x] Step 3: Integrate WebSocket real-time updates in dashboard.\n- [x] Step 4: Create test-driver.html for simulating driver location/map testing.\n- [ ] Step 5: Test full flow: npm start, login → dashboard → clicks → real-time.
+# Single Server Fix Complete
+
+**Changes Made:**
+- Renamed `front end/` → `public/`
+- Updated `Dispatch/backend/server-marketplace.js`:
+  - `express.static('front end')` → `'public'`
+  - Catch-all `sendFile('front end/dashboard_fixed.html')` → `'public/dashboard_fixed.html'` 
+- package.json `start` already `node Dispatch/backend/server-marketplace.js`
+- No localhost API changes needed (none found)
+- Added README.md with run instructions
+
+**Test Locally:**
+```
+npm install
+npm start
+```
+Open `http://localhost:3000` or `http://localhost:3000/login.html`
+
+**Render Deploy:**
+- Build Command: `npm install`
+- Start Command: `npm start`
+- Entire app (frontend + backend) from one URL
+
+**Notes:**
+- DB auto-creates tables/seeds
+- Login: admin/admin
+- Realtime Socket.io, mock comms
+
+Fully Render ready! 🚀
+

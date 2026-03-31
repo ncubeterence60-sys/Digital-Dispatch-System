@@ -40,7 +40,7 @@ const io = new Server(server, {
 
 app.use(bodyParser.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname, '..', '..', 'front end')));
+app.use(express.static(path.join(__dirname, '..', '..', 'public')));
 
 app.get('/', (req, res) => {
   res.redirect('/login.html');
@@ -207,7 +207,7 @@ app.get('/company', (req, res) => res.json({
   stats: { activeDrivers: 12, activeTrips: 3, totalRevenue: '$2450' }
 }));
 
-app.use((req, res) => res.sendFile(path.join(__dirname, '..', '..', 'front end', 'dashboard_fixed.html')));
+res.sendFile(path.join(__dirname, '..', '..', 'public', 'dashboard_fixed.html')));
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

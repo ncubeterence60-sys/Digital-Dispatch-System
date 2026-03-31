@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "description": "Digital Dispatch E-Hailing Server (Render Ready)",
   "scripts": {
-    "start": "node Dispatch/backend/server-marketplace.js",
-    "dev": "nodemon Dispatch/backend/server-marketplace.js",
+    "start": "node Dispatch/backend/server-marketplace-fixed.js",
+    "dev": "nodemon Dispatch/backend/server-marketplace-fixed.js",
     "build": "npm rebuild better-sqlite3",
     "postinstall": "npm rebuild better-sqlite3 --build-from-source"
   },

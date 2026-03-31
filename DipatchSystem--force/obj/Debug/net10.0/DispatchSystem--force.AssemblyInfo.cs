@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DispatchSystem--force")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ea6b9b8816c122bcc122d86112fb87fd7f0d5208")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d3a3ad446a6dec94286161865a14e143f16b08a0")]
 [assembly: System.Reflection.AssemblyProductAttribute("DispatchSystem--force")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DispatchSystem--force")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
