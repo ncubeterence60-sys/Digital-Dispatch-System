@@ -47,7 +47,7 @@ app.get('/', (req, res) => {
 });
 
 const dbPath = path.join(__dirname, '..', '..', '..', 'dispatch_system.db');
-const db = new Database(dbPath);
+const db = new Database(dbPath, (err) => { if (err) console.error('DB error:', err); });
 console.log('Connected to dispatch_system.db at', dbPath);
 
 db.exec(`CREATE TABLE IF NOT EXISTS users (
