@@ -2,7 +2,7 @@
  * Nasho Technologies Service Marketplace - Configuration
  */
 window.API_CONFIG = {
-  API_BASE_URL: 'http://localhost:3000',
+  API_BASE_URL: window.location.origin,
   ENDPOINTS: {
     LOGIN: '/login',
     ROLES: {

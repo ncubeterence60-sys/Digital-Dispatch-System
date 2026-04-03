@@ -1,28 +1,20 @@
-# Render Deployment Configuration - Updated for Production
-# npm ci + better-sqlite3 fix
-
+# Render Deployment Configuration - Render Ready
 services:
   - type: web
     name: digital-dispatch-marketplace
     runtime: node
     buildCommand: |
-      npm ci --no-optional --ignore-scripts
-      rm -rf node_modules/.bin/better-sqlite3 node_modules/better-sqlite3/build node_modules/better-sqlite3/lib/binding*
+      npm ci
       npm install better-sqlite3 --build-from-source --platform=linux --arch=x64
-      npm rebuild better-sqlite3
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        fromSecret: PORT
-      # Add Twilio credentials as secrets in Render dashboard if needed
-      - key: TWILIO_ACCOUNT_SID
-        fromSecret: TWILIO_ACCOUNT_SID
-      - key: TWILIO_AUTH_TOKEN
-        fromSecret: TWILIO_AUTH_TOKEN
-      - key: TWILIO_PHONE_NUMBER
-        fromSecret: TWILIO_PHONE_NUMBER
-      - key: TWILIO_WHATSAPP_NUMBER
-        fromSecret: TWILIO_WHATSAPP_NUMBER
-
+        fromDatabase:
+          name: dispatch-db
+          property: port
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dispatch-db
+          property: connectionString

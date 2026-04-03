@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: dispatch_system
+      POSTGRES_USER: dispatch
+      POSTGRES_PASSWORD: dispatch123
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  osrm:
+    image: osrm/osrm-backend:latest
+    ports:
+      - '5000:5000'
+    volumes:
+      - ./infra/osrm/harare.osrm:/opt/car.osrm  # Download Harare OSM → build later
+    command: osrm-routed --algorithm MLD /opt/car.osrm
+
+volumes:
+  postgres_data:

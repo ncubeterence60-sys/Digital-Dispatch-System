@@ -1,28 +1,21 @@
-# Digital Dispatch System - Single Server Setup
+# Digital Dispatch System
 
-## Local Run
-```
-npm install
-npm start
-```
-Visit `http://localhost:3000/login.html`
-- Login: admin/admin -> dashboard
-- APIs: /login, /services, /providers, /requests (POST login form data)
-- Realtime Socket.io trips
-- Static frontend served from /public
+## Render Deployment
 
-## Render Deploy
-- Connect repo to Render
-- Build: `npm install`
-- Start: `npm start`
-- Single URL serves frontend + backend APIs
+1. Push to GitHub.
+2. Render.com → New → Web Service → Connect repo.
+3. **New → PostgreSQL** (dispatch-db).
+4. Dashboard → Environment → Add:
+   - `DATABASE_URL` from Postgres INTERNAL DATABASE URL.
+5. Deploy → Live at `https://your-app.onrender.com/login.html` (admin/admin).
+
+## Local Dev
+```
+npm start  # http://localhost:3000/login.html
+```
 
 ## Features
-- SQLite DB auto-setup
-- Providers/Requests management
-- Mock WhatsApp/SMS
-- Distance calc
-- PWA ready (manifest.json, sw.js)
-
-Done ✅
-
+- PWA dashboard
+- Realtime Socket.io
+- Persistent Postgres
+- Relative APIs (Render ready)

@@ -1,38 +1,35 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "digital-dispatch-marketplace",
-  "version": "1.0.0",
-  "description": "Digital Dispatch E-Hailing Server (Render Ready)",
+  "name": "digital-dispatch-system",
+  "version": "2.0.0",
+  "description": "Digital Dispatch - Service Marketplace (server-marketplace.js main)",
+  "main": "Dispatch/backend/server-marketplace.js",
   "scripts": {
     "start": "node Dispatch/backend/server-marketplace-fixed.js",
-    "dev": "nodemon Dispatch/backend/server-marketplace-fixed.js",
-    "build": "npm rebuild better-sqlite3",
-    "postinstall": "npm rebuild better-sqlite3 --build-from-source"
+    "dev": "nodemon Dispatch/backend/server-marketplace.js",
+    "install-deps": "npm install"
   },
   "keywords": [
     "dispatch",
     "uber",
-    "e-hailing",
+    "ride",
     "marketplace"
   ],
-  "author": "Digital Dispatch",
+  "author": "Nasho Technologies",
   "license": "ISC",
-  "type": "commonjs",
   "engines": {
     "node": ">=20.0.0"
   },
   "dependencies": {
     "better-sqlite3": "^12.8.0",
-    "body-parser": "^1.20.2",
+    "body-parser": "^1.20.3",
     "cors": "^2.8.5",
-    "crypto-js": "^4.2.0",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "socket.io": "^4.8.3",
-    "sqlite3": "^6.0.1",
-    "uuid": "^13.0.0"
+    "socket.io": "^4.8.0",
+    "sqlite3": "^6.0.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.7"
   }
 }
