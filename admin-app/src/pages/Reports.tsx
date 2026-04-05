@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useAuth } from '../contexts/AuthContext'
 
 // Mock data - replace with API calls
 const reportsData = [
@@ -9,24 +10,32 @@ const reportsData = [
 ]
 
 const Reports: React.FC = () => {
+  const { token } = useAuth();
   const [stats, setStats] = useState({
     totalTrips: 0,
     totalRevenue: 0,
     activeDrivers: 0,
     pendingPayouts: 0
-  })
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch real stats from /api/admin/stats
-    fetch('/api/admin/stats')
+    if (!token) return;
+
+    fetch('/api/admin/stats', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
       .then(res => res.json())
       .then(setStats)
-      .catch(console.error)
-  }, [])
+      .catch(err => console.error('Stats error:', err))
+      .finally(() => setLoading(false));
+  }, [token]);
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8">Reports Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
       
       <div className="flex flex-wrap gap-6 mb-8">
         <div className="flex-1 min-w-[250px] bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-2xl shadow-2xl">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Search, Filter, Download } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
+import { Search, Filter, Download, UserPlus, X, Check } from 'lucide-react'
 
 interface Trip {
   id: number
@@ -20,13 +21,19 @@ const Trips: React.FC = () => {
     fetchTrips()
   }, [])
 
+  const { token } = useAuth();
+
   const fetchTrips = async () => {
     try {
-      const response = await fetch('/api/admin/trips')
+      const response = await fetch('/api/admin/trips', {
+        headers: {
+          'Authorization': `Bearer ${token || ''}`
+        }
+      });
       const data = await response.json()
       setTrips(data)
     } catch (error) {
-      console.error('Failed to fetch trips')
+      console.error('Failed to fetch trips', error)
     }
   }
 
@@ -34,22 +41,31 @@ const Trips: React.FC = () => {
     filter === 'all' || trip.status === filter
   )
 
-  const exportCSV = () => {
-    const csv = [
-      ['ID', 'Customer', 'Driver', 'Pickup', 'Dropoff', 'Price', 'Status', 'Date'],
-      ...filteredTrips.map(trip => [
-        trip.id, trip.customer, trip.driver, trip.pickup, trip.dropoff, 
-        `$${trip.price}`, trip.status, trip.date
-      ])
-    ].map(row => row.join(',')).join('\n')
-    
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `trips-${new Date().toISOString().split('T')[0]}.csv`
-    a.click()
-  }
+  const assignDriver = async (tripId: number, driverId: string) => {
+    try {
+      await fetch(`/api/admin/trips/${tripId}/assign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ driverId })
+      });
+      fetchTrips(); // Refresh data
+    } catch (error) {
+      console.error('Failed to assign driver');
+    }
+  };
+
+  const cancelTrip = async (tripId: number) => {
+    if (confirm('Are you sure you want to cancel this trip?')) {
+      try {
+        await fetch(`/api/admin/trips/${tripId}/cancel`, {
+          method: 'POST'
+        });
+        fetchTrips(); // Refresh data
+      } catch (error) {
+        console.error('Failed to cancel trip');
+      }
+    }
+  };
 
   return (
     <div>
@@ -74,7 +90,7 @@ const Trips: React.FC = () => {
             <option value="cancelled">Cancelled</option>
           </select>
           
-          <button onClick={exportCSV} className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-2 rounded-xl hover:shadow-lg transition-all">
+          <button className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-2 rounded-xl hover:shadow-lg transition-all">
             <Download className="w-4 h-4" />
             Export CSV
           </button>
@@ -91,13 +107,14 @@ const Trips: React.FC = () => {
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Driver</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Pickup</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Dropoff</th>
-                <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Price</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Price</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredTrips.map((trip) => (
+{filteredTrips.map((trip) => (
                 <tr key={trip.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     #{trip.id}
@@ -130,11 +147,42 @@ const Trips: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {trip.date}
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <div className="flex space-x-2">
+                      {trip.status === 'pending' && (
+                        <button
+                          onClick={() => assignDriver(trip.id, 'auto')} // In real app, show driver selection modal
+                          className="flex items-center gap-1 bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600"
+                        >
+                          <UserPlus className="w-3 h-3" />
+                          Assign
+                        </button>
+                      )}
+                      {trip.status !== 'completed' && trip.status !== 'cancelled' && (
+                        <button
+                          onClick={() => cancelTrip(trip.id)}
+                          className="flex items-center gap-1 bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600"
+                        >
+                          <X className="w-3 h-3" />
+                          Cancel
+                        </button>
+                      )}
+                      {trip.status === 'accepted' && (
+                        <button
+                          onClick={() => {/* Mark as completed */}}
+                          className="flex items-center gap-1 bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600"
+                        >
+                          <Check className="w-3 h-3" />
+                          Complete
+                        </button>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
               {filteredTrips.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
                     <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>No trips match the selected filter</p>
                   </td>
