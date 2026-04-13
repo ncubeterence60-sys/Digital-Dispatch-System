@@ -5,6 +5,16 @@ import 'leaflet/dist/leaflet.css';
 import L, { LatLngExpression } from 'leaflet';
 
 // Fix for default markers in react-leaflet
+interface MapComponentProps {
+  center?: LatLngExpression;
+  zoom?: number;
+  markers?: Array<{
+    position: LatLngExpression;
+    popup?: string;
+  }>;
+  className?: string;
+}
+
 const MapComponent: React.FC<MapComponentProps> = ({
   center = [40.7128, -74.0060] as LatLngExpression, // Default to NYC
   zoom = 13,
@@ -22,22 +32,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     }
   }, []);
 
-  interface MapComponentProps {
-    center?: LatLngExpression;
-    zoom?: number;
-    markers?: Array<{
-      position: LatLngExpression;
-      popup?: string;
-    }>;
-    className?: string;
-  }
-
   return (
-  center = [40.7128, -74.0060], // Default to NYC
-  zoom = 13,
-  markers = [],
-  className = "h-96 w-full rounded-lg"
-}) => {
   return (
     <div className={className}>
       <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }}>
