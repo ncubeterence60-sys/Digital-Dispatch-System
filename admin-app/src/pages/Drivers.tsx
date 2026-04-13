@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { UserPlus, CheckCircle, XCircle, Phone, MapPin } from 'lucide-react'
+import { Search, UserPlus, MapPin } from 'lucide-react'
 
 interface Driver {
   id: number
@@ -40,14 +40,7 @@ const Drivers: React.FC = () => {
     }
   }
 
-  const mockDrivers = [
-    { id: 1, name: 'John Doe', phone: '+263712345678', status: 'online', rating: 4.8, tripsCompleted: 245, earnings: 12450, location: 'Harare CBD' },
-    { id: 2, name: 'Sarah Smith', phone: '+263772345678', status: 'busy', rating: 4.9, tripsCompleted: 189, earnings: 9870, location: 'Eastlea' },
-    { id: 3, name: 'Mike Johnson', phone: '+263732345678', status: 'offline', rating: 4.2, tripsCompleted: 67, earnings: 3420, location: 'Bulawayo' },
-    { id: 4, name: 'New Driver', phone: '+263789012345', status: 'offline', rating: 0, tripsCompleted: 0, earnings: 0, location: 'Pending' }
-  ]
-
-  const filteredDrivers = mockDrivers.filter(driver =>
+  const filteredDrivers = drivers.filter(driver =>
     driver.name.toLowerCase().includes(search.toLowerCase()) ||
     driver.phone.includes(search)
   )

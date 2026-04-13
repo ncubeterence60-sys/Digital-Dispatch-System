@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { Search, Filter, Download, UserPlus, X, Check } from 'lucide-react'
+import { Search, Download, UserPlus, X, Check } from 'lucide-react'
 
 interface Trip {
   id: number

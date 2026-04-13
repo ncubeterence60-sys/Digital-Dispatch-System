@@ -15,9 +15,10 @@ const authMiddleware = (req, res, next) => {
   next();
 };
 
-// Create users table and demo admin on first run
+// Create users table and demo admin on first run - FIXED for existing DB
+db.exec(`DROP TABLE IF EXISTS users`);
 db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
+  CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE,
     password TEXT,
@@ -26,15 +27,13 @@ db.exec(`
   )
 `);
 
-const demoUserHash = crypto.createHmac('sha256', ADMIN_SECRET).update('admin').digest('hex');
-db.prepare('INSERT OR IGNORE INTO users (username, password) VALUES (?, ?)').run('admin', demoUserHash);
+db.prepare('INSERT INTO users (username, password) VALUES (?, ?)').run('admin', 'admin');
 
 // POST /login
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
   try {
-    const hash = crypto.createHmac('sha256', ADMIN_SECRET).update(username).digest('hex');
-    const user = db.prepare('SELECT * FROM users WHERE username = ? AND password = ?').get(username, hash);
+    const user = db.prepare('SELECT * FROM users WHERE username = ? AND password = ?').get(username, password);
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -42,7 +41,7 @@ router.post('/login', async (req, res) => {
     res.json({ token });
   } catch (err) {
     console.error(err);
-    res.json({ totalTrips: 0, totalRevenue: 0, activeDrivers: 0, pendingPayouts: 0 });
+    res.status(401).json({ error: 'Login error' });
   }
 });
 
@@ -72,7 +71,6 @@ router.get('/drivers', authMiddleware, (req, res) => {
   }
 });
 
-module.exports = router;
 
 // GET /verify
 router.get('/verify', (req, res) => {

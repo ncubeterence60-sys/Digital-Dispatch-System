@@ -211,6 +211,63 @@ app.get('/company', (req, res) => res.json({
   stats: { activeDrivers: 12, activeTrips: 3, totalRevenue: '$2450' }
 }));
 
+// Auth middleware
+const authMiddleware = (req, res, next) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token || !token.startsWith('admin:')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+};
+
+// Admin API routes - for React frontend
+app.post('/api/admin/login', (req, res) => {
+  const { username, password } = req.body;
+  db.get("SELECT * FROM users WHERE username = ?", [username], (err, row) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ error: 'Server error' });
+    }
+    if (row && row.password_hash === password) {
+      const token = `admin:${username}:${Date.now()}`;
+      res.json({ token, role: row.role });
+    } else {
+      res.status(401).json({ error: 'Invalid credentials' });
+    }
+  });
+});
+
+app.get('/api/admin/verify', authMiddleware, (req, res) => {
+  res.json({ valid: true });
+});
+
+app.get('/api/admin/stats', authMiddleware, (req, res) => {
+  db.get("SELECT COUNT(*) as trips FROM service_requests", (err, trips) => {
+    db.get("SELECT COUNT(*) as drivers FROM service_providers WHERE status='Available'", (err2, drivers) => {
+      db.get("SELECT SUM(price) as revenue FROM trips WHERE status='completed'", (err3, revenue) => {
+        res.json({
+          totalTrips: trips?.trips || 0,
+          activeDrivers: drivers?.drivers || 0,
+          totalRevenue: revenue?.revenue || 0,
+          pendingPayouts: 0
+        });
+      });
+    });
+  });
+});
+
+app.get('/api/admin/trips', authMiddleware, (req, res) => {
+  db.all(`SELECT * FROM service_requests LIMIT 50`, (err, rows) => {
+    res.json(rows || []);
+  });
+});
+
+app.get('/api/admin/drivers', authMiddleware, (req, res) => {
+  db.all(`SELECT * FROM service_providers`, (err, rows) => {
+    res.json(rows || []);
+  });
+});
+
 app.use((req, res) => res.sendFile(path.join(__dirname, '..', '..', 'public', 'dashboard_fixed.html')));
 
 const PORT = process.env.PORT || 3000;

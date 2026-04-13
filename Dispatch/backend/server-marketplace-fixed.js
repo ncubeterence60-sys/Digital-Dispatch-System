@@ -206,6 +206,69 @@ app.get('/company', (req, res) => res.json({
   stats: { activeDrivers: 12, activeTrips: 3, totalRevenue: '$2450' }
 }));
 
+// Auth middleware
+const authMiddleware = (req, res, next) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token || !token.startsWith('admin:')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+};
+
+// Admin API routes - for React frontend
+app.post('/api/admin/login', (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const row = db.prepare("SELECT * FROM users WHERE username = ?").get(username);
+    if (row && row.password_hash === password) {
+      const token = `admin:${username}:${Date.now()}`;
+      res.json({ token, role: row.role });
+    } else {
+      res.status(401).json({ error: 'Invalid credentials' });
+    }
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get('/api/admin/verify', authMiddleware, (req, res) => {
+  res.json({ valid: true });
+});
+
+app.get('/api/admin/stats', authMiddleware, (req, res) => {
+  try {
+    const trips = db.prepare("SELECT COUNT(*) as count FROM service_requests").get();
+    const drivers = db.prepare("SELECT COUNT(*) as count FROM service_providers WHERE status='Available'").get();
+    res.json({
+      totalTrips: trips?.count || 0,
+      activeDrivers: drivers?.count || 0,
+      totalRevenue: 0,
+      pendingPayouts: 0
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/admin/trips', authMiddleware, (req, res) => {
+  try {
+    const rows = db.prepare(`SELECT * FROM service_requests LIMIT 50`).all();
+    res.json(rows || []);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/admin/drivers', authMiddleware, (req, res) => {
+  try {
+    const rows = db.prepare(`SELECT * FROM service_providers`).all();
+    res.json(rows || []);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.use((req, res) => res.sendFile(path.join(__dirname, '..', '..', 'public', 'dashboard_fixed.html')));
 
 const PORT = process.env.PORT || 3000;

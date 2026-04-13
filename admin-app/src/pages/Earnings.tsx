@@ -26,13 +26,7 @@ const Earnings: React.FC = () => {
     }
   }
 
-  const chartData = [
-    { name: 'Jan', revenue: 2400, platformFee: 240 },
-    { name: 'Feb', revenue: 1398, platformFee: 221 },
-    { name: 'Mar', revenue: 9800, platformFee: 980 },
-    { name: 'Apr', revenue: 3908, platformFee: 390 },
-    { name: 'May', revenue: 4800, platformFee: 480 }
-  ]
+
 
   const approvePayout = async (id: number) => {
     try {
@@ -42,12 +36,6 @@ const Earnings: React.FC = () => {
       console.error('Approval failed')
     }
   }
-
-  const mockPayouts = [
-    { id: 1, driverName: 'John Doe', amount: 245.50, status: 'pending', date: '2024-05-20' },
-    { id: 2, driverName: 'Sarah Smith', amount: 180.75, status: 'paid', date: '2024-05-19' },
-    { id: 3, driverName: 'Mike Johnson', amount: 320.00, status: 'pending', date: '2024-05-18' }
-  ]
 
   return (
     <div>
@@ -92,7 +80,7 @@ const Earnings: React.FC = () => {
         <div className="bg-white p-8 rounded-2xl shadow-xl">
           <h3 className="text-xl font-bold mb-6">Pending Settlements</h3>
           <div className="space-y-4">
-            {mockPayouts.map((payout) => (
+            {payouts.map((payout) => (
               <div key={payout.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                 <div>
                   <div className="font-semibold">{payout.driverName}</div>

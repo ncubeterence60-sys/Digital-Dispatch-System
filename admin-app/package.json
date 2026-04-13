@@ -6,7 +6,7 @@
   "homepage": "./",
   "scripts": {
     "dev": "vite",
-    "build": "npx tsc --skipLibCheck && npx vite build",
+    "build": "tsc --skipLibCheck && vite build && copy dashboard.html dist",
     "preview": "vite preview",
     "electron": "electron .",
     "electron-dev": "NODE_ENV=development concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
@@ -26,14 +26,14 @@
     "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
     "concurrently": "^8.2.2",
-    "electron": "^30.0.0",
-    "electron-builder": "^24.13.3",
+    "electron": "^41.2.0",
+    "electron-builder": "^26.8.1",
+    "leaflet": "^1.9.4",
     "postcss": "^8.4.47",
     "react-leaflet": "^4.2.1",
-    "leaflet": "^1.9.4",
     "tailwindcss": "^3.4.13",
     "typescript": "5.3",
-    "vite": "^5.4.8",
+    "vite": "^8.0.8",
     "wait-on": "^7.2.0"
   },
   "build": {
@@ -44,7 +44,8 @@
     },
     "files": [
       "dist/**/*",
-      "main.js"
+      "main.js",
+      "dashboard.html"
     ]
   }
 }

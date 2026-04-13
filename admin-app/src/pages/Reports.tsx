@@ -1,13 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { useAuth } from '../contexts/AuthContext'
-
-// Mock data - replace with API calls
-const reportsData = [
-  { name: 'Jan', trips: 120, revenue: 4500, drivers: 25 },
-  { name: 'Feb', trips: 150, revenue: 5800, drivers: 28 },
-  { name: 'Mar', trips: 200, revenue: 7200, drivers: 32 },
-  { name: 'Apr', trips: 180, revenue: 6500, drivers: 30 },
-]
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 const Reports: React.FC = () => {
   const { token } = useAuth();
@@ -18,6 +10,15 @@ const Reports: React.FC = () => {
     pendingPayouts: 0
   });
   const [loading, setLoading] = useState(true);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <span className="ml-3 text-lg">Loading dashboard...</span>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (!token) return;
@@ -82,5 +83,4 @@ const Reports: React.FC = () => {
   )
 }
 
-export default Reports
-
+export default Reports;
