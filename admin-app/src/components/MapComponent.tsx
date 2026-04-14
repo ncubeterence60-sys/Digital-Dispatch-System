@@ -22,7 +22,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   className = "h-96 w-full rounded-lg"
 }) => {
   useEffect(() => {
-    if (!L.Icon.Default.prototype._getIconUrl) {
+    if (!(L.Icon.Default.prototype as any)._getIconUrl) {
       delete (L.Icon.Default.prototype as any)._getIconUrl;
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -32,7 +32,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
     }
   }, []);
 
-  return (
   return (
     <div className={className}>
       <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }}>

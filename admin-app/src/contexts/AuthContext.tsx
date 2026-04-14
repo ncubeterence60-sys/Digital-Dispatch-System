@@ -33,7 +33,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     if (token) {
       // Verify token with backend
-      fetch(`${API_BASE_URL}/api/admin/verify`, {
+      fetch(`/api/admin/verify`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => {
@@ -52,7 +52,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
+      const response = await fetch(`/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
