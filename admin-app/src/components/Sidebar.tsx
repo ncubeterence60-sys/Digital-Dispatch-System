@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, FileText, DollarSign, Users, Map, LogOut } from 'lucide-react'
+import { Dashboard, FileText, DollarSign, Users, MapIcon, LogOut } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 const Sidebar: React.FC = () => {
@@ -25,7 +25,7 @@ const Sidebar: React.FC = () => {
             isActive('/') ? 'bg-slate-800' : 'hover:bg-slate-800'
           }`}
         >
-          <LayoutDashboard className="w-5 h-5 text-slate-400" />
+<Dashboard className="w-5 h-5 text-slate-400" />
           <span className="font-medium text-slate-200">Dashboard</span>
         </Link>
         <Link
@@ -52,7 +52,7 @@ const Sidebar: React.FC = () => {
             isActive('/map') ? 'bg-slate-800' : 'hover:bg-slate-800'
           }`}
         >
-          <Map className="w-5 h-5 text-slate-400" />
+          <MapIcon className="w-5 h-5 text-slate-400" />
           <span className="font-medium text-slate-200">Street Map</span>
         </Link>
         <Link

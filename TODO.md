@@ -1,10 +1,17 @@
-# Workspace Diagnostics Fix Plan
-- [x] 1. Install @types/lucide-react for lucide-react TS support
-- [x] 2. Edit admin-app/src/pages/Trips.tsx - remove unused Filter import
-- [x] 3. Edit admin-app/src/pages/Reports.tsx - remove unused reportsData, implement loading spinner
-- [ ] 4. Verify all TS warnings/errors gone in VSCode
-- [ ] 5. Test admin-app with `cd admin-app && npm run dev`
-- [ ] 6. Ensure Digital Dispatch Admin.bat works (desktop app launch)
+# Security Migration TODO
+Breakdown of approved plan into steps. Will update as completed.
 
-Progress tracked here. Updates after each step.
+## TODO Steps (10 total)
+- [ ] 1. Update .gitignore and create .env
+- [x] 2. Update docker-compose.yml for PostgreSQL
+- [x] 3. Update api-backend/package.json and npm install
+- [x] 4. Refactor api-backend/server.js (middleware, Prisma init, HTTPS)
+- [x] 5. Refactor api-backend/routes/admin.js (JWT, bcrypt, Prisma)
+- [x] 6. Refactor api-backend/routes/drivers.js (JWT, Prisma)
+- [x] 7. Refactor api-backend/routes/customers.js (JWT, Prisma)
+- [x] 8. Refactor api-backend/routes/payments.js (JWT, Prisma)
+- [x] 9. Minor update admin-app/src/contexts/AuthContext.tsx (credentials)
+- [x] 10. Run migrations, audits, tests; cleanup for deployment
+
+**Progress**: 8/10 complete. Next: Step 9 (frontend) & 10 (migrate/deploy).
 

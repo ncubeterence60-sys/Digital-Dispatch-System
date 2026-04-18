@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 // API base URL - works in both web (proxied) and Electron contexts
-const API_BASE_URL = 'http://localhost:3000';
+// API proxied via Vite + HTTPS backend
+const API_BASE_URL = '/api';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -33,8 +34,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     if (token) {
       // Verify token with backend
-      fetch(`/api/admin/verify`, {
-        headers: { Authorization: `Bearer ${token}` }
+      fetch(`${API_BASE_URL}/admin/verify`, {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include'
       })
         .then(res => {
           if (res.ok) {
@@ -52,10 +54,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch(`/api/admin/login`, {
+      const response = await fetch(`${API_BASE_URL}/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
+        credentials: 'include'
       });
 
       if (response.ok) {
