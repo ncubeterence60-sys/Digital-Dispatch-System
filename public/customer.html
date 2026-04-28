@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer App - Digital Dispatch</title>
+  <link rel="manifest" href="manifest-customer.json">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/uber-style.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- Leaflet CSS for OSM -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root { font-family: 'Inter', sans-serif; }
+    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+    .glass-card { background: rgba(255,255,255,0.25); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); }
+    .tracking-card { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+    .status-progress { height: 8px; border-radius: 10px; }
+    .payment-card { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    #map { height: 350px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+    .currency-toggle { position: absolute; top: 10px; right: 10px; z-index: 1000; }
+    .loading { opacity: 0.6; pointer-events: none; }
+    .pwa-prompt { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; padding: 15px 25px; border-radius: 50px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); z-index: 9999; display: none; }
+    #pickupList, #dropoffList { position: absolute; z-index: 1050; background: white; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-height: 200px; overflow-y: auto; }
+    .suggestion { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #eee; }
+    .suggestion:hover, .suggestion.active { background: #f8f9fa; }
+    #localTime { font-size: 0.85em; opacity: 0.8; }
+  </style>
+</head>
+<body>
+  <div class="container-fluid p-4 pb-5">
+    <!-- Currency Toggle -->
+    <div class="currency-toggle">
+      <div class="btn-group" role="group">
+        <button class="btn btn-sm btn-outline-light active" data-currency="USD" id="usdBtn">$ USD</button>
+        <button class="btn btn-sm btn-outline-light" data-currency="ZWL" id="zwlBtn">ZWL</button>
+      </div>
+    </div>
+
+    <!-- Request Form / Tracking Toggle -->
+    <div id="requestForm" class="glass-card rounded-4 p-4 mb-4 shadow-lg">
+      <div class="h4 mb-3 text-white fw-bold">Book a Ride <small id="localTime" class="d-block"></small></div>
+      
+      <div class="position-relative mb-3">
+        <input type="text" class="form-control rounded-3 mb-1" id="pickup" placeholder="Pickup: Harare CBD">
+        <div id="pickupList" class="w-100"></div>
+      </div>
+      <div class="position-relative mb-3">
+        <input type="text" class="form-control rounded-3" id="dropoff" placeholder="Destination: Airport">
+        <div id="dropoffList" class="w-100"></div>
+      </div>
+      
+      <button class="btn btn-light w-100 py-3 mb-3 rounded-pill fw-bold" onclick="getEstimate()" id="estimateBtn">
+        <i class="fas fa-calculator me-2"></i>Get Estimate
+      </button>
+      
+      <div id="estimateResult" class="alert alert-success d-none p-3 rounded-3">
+        <div class="row">
+          <div class="col-md-6">
+            <strong id="estPrice"></strong>
+          </div>
+          <div class="col-md-3">
+            <small id="estDistance"></small>
+          </div>
+          <div class="col-md-3">
+            <small id="estEta"></small>
+          </div>
+        </div>
+      </div>
+      
+      <div class="row g-2">
+        <div class="col">
+          <button class="btn btn-success w-100 py-3 rounded-pill fw-bold" onclick="requestRide()">
+            <i class="fas fa-car me-2"></i>Request Ride
+          </button>
+        </div>
+        <div class="col">
+          <button class="btn btn-primary w-100 py-3 rounded-pill fw-bold" onclick="shareLocation()">
+            <i class="fas fa-location-arrow me-2"></i>Share Location
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trip Status -->
+    <div id="tripStatus" class="d-none">
+      <!-- Tracking Card -->
+      <div class="tracking-card rounded-4 p-5 mb-4 text-center shadow-2xl">
+        <div class="mb-4">
+          <i class="fas fa-car fa-4x mb-3 opacity-75" id="statusIcon"></i>
+          <h2 class="mb-1" id="statusText">Driver Arriving</h2>
+          <div class="text-white-50 mb-3" id="etaText">ETA 4 min</div>
+          <div class="status-progress bg-white bg-opacity-30 mx-auto" style="width: 200px;">
+            <div class="bg-white status-progress-fill" id="progressFill" style="width: 65%;"></div>
+          </div>
+        </div>
+        <div id="driverDetails" class="text-white-50 mb-3">John Doe</div>
+        <div class="row g-3 text-center">
+          <div class="col">
+            <button class="btn btn-light btn-lg px-4 rounded-pill" onclick="callDriver()">
+              <i class="fas fa-phone me-1"></i>Call
+            </button>
+          </div>
+          <div class="col">
+            <button class="btn btn-light btn-lg px-4 rounded-pill" onclick="messageDriver()">
+              <i class="fas fa-comment me-1"></i>Message
+            </button>
+          </div>
+          <div class="col">
+            <button class="btn btn-outline-light btn-lg px-4 rounded-pill" onclick="cancelTrip()">
+              <i class="fas fa-times me-1"></i>Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Map -->
+      <div class="glass-card rounded-4 p-4 mb-4 shadow-lg">
+        <div class="mb-3 d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 text-white fw-bold">📍 Live Driver Tracking</h6>
+          <div>
+            <button class="btn btn-sm btn-outline-light me-2" onclick="recenterMap()">Recenter</button>
+            <button class="btn btn-sm btn-outline-light" onclick="toggleLayers()">Map</button>
+          </div>
+        </div>
+        <div id="map"></div>
+      </div>
+
+      <!-- Trip Details -->
+      <div class="glass-card rounded-4 p-4 shadow-lg">
+        <h6 class="mb-4 text-white fw-bold">Trip Details</h6>
+        <div class="row mb-3">
+          <div class="col-3 text-white-50 text-center"><i class="fas fa-flag-checkered fa-lg"></i></div>
+          <div class="col-9">
+            <div class="fw-bold text-white fs-6 mb-1" id="tripRoute">Harare CBD → Airport</div>
+            <small class="text-white-50" id="tripInfo">7.3 km • 18 min</small>
+          </div>
+        </div>
+        <div class="row mb-4">
+          <div class="col-3 text-white-50 text-center"><i class="fas fa-wallet fa-lg"></i></div>
+          <div class="col-9">
+            <div class="fw-bold text-success fs-5 mb-1" id="tripPrice">$8.50</div>
+            <small class="text-white-50" id="paymentStatus">Payment Pending</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PWA Install Prompt -->
+  <div id="pwaPrompt" class="pwa-prompt">
+    <i class="fas fa-download me-2"></i>
+    Install Digital Dispatch app? <strong>Tap</strong> then <strong>Add to Home Screen</strong>
+    <button class="btn btn-primary btn-sm ms-3" onclick="deferPWA()">Later</button>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/realtime.js"></script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    let map, customerMarker, driverMarker, currentTripId;
+    let currentCurrency = 'USD';
+    let zwlRate = 32000; // Mock ZWL/USD rate
+    const harareTZ = 'Africa/Harare';
+
+    // Init on load
+    window.addEventListener('load', initApp);
+
+    function initApp() {
+      initMap();
+      updateLocalTime();
+      initCurrencyToggle();
+      checkPWA();
+      // Existing realtime already initialized
+    }
+
+    function initMap() {
+      map = L.map('map').setView([-17.8179, 31.0446], 12); // Harare center
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 19
+      }).addTo(map);
+      
+      // Customer marker (hidden initially)
+      customerMarker = L.marker([-17.8179, 31.0446], {
+        icon: L.divIcon({ className: 'customer-icon', html: '<i class="fas fa-user text-blue fa-lg"></i>' })
+      }).addTo(map).bindPopup('You are here');
+      
+      driverMarker = null;
+    }
+
+    function initCurrencyToggle() {
+      document.querySelectorAll('[data-currency]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelector('.btn.active').classList.remove('active');
+          e.target.classList.add('active');
+          currentCurrency = e.target.dataset.currency;
+          updateEstimates();
+        });
+      });
+    }
+
+    function updateLocalTime() {
+      const now = new Date().toLocaleString('en-ZW', { timeZone: harareTZ });
+      document.getElementById('localTime').textContent = `Zimbabwe Time: ${now}`;
+      setInterval(updateLocalTime, 30000);
+    }
+
+    async function getEstimate() {
+      const btn = document.getElementById('estimateBtn');
+      const pickup = document.getElementById('pickup').value;
+      const dropoff = document.getElementById('dropoff').value;
+      
+      if (!pickup || !dropoff) return showNoty('Enter pickup and destination', 'warning');
+      
+      btn.classList.add('loading');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Estimating...';
+      
+      try {
+        const res = await fetch(`/api/customers/estimate?pickup_location=${encodeURIComponent(pickup)}&dropoff_location=${encodeURIComponent(dropoff)}`);
+        const data = await res.json();
+        
+        if (data.success) {
+          const price = formatCurrency(data.estimated_price);
+          document.getElementById('estPrice').textContent = price;
+          document.getElementById('estDistance').textContent = `${data.distance_km} km`;
+          document.getElementById('estEta').textContent = `${data.eta_minutes} min`;
+          document.getElementById('estimateResult').classList.remove('d-none');
+        }
+      } catch (e) {
+        showNoty('Estimate unavailable - using default', 'warning');
+        setDefaultEstimate();
+      } finally {
+        btn.classList.remove('loading');
+        btn.innerHTML = '<i class="fas fa-calculator me-2"></i>Get Estimate';
+      }
+    }
+
+    function formatCurrency(amount) {
+      const displayAmount = currentCurrency === 'ZWL' ? (amount * zwlRate).toLocaleString() : amount.toFixed(2);
+      return `${currentCurrency === 'USD' ? '$' : 'Z$'} ${displayAmount}`;
+    }
+
+    function updateEstimates() {
+      const priceEl = document.getElementById('estPrice');
+      if (!priceEl.textContent) return;
+      // Re-fetch or toggle current estimate
+      getEstimate();
+    }
+
+    async function requestRide() {
+      const pickup = document.getElementById('pickup').value;
+      const dropoff = document.getElementById('dropoff').value;
+      const priceEl = document.getElementById('estPrice').textContent;
+      if (!pickup || !dropoff) return showNoty('Complete locations first', 'error');
+      
+      const msisdn = prompt('Phone for payment/confirmation:');
+      if (!msisdn) return;
+      
+      try {
+        // Get coords from input (simplified)
+        const coords = await geocodeLocations(pickup, dropoff);
+        const res = await fetch('/api/customers/rides', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            pickup_location: pickup,
+            dropoff_location: dropoff,
+            passenger_name: 'Customer',
+            passenger_phone: msisdn,
+            pickup_lat: coords.pickup[0],
+            pickup_lng: coords.pickup[1],
+            dropoff_lat: coords.dropoff[0],
+            dropoff_lng: coords.dropoff[1]
+          })
+        });
+        const data = await res.json();
+        currentTripId = data.trip_id;
+        showNoty(`Ride requested! Trip #${data.trip_id}`, 'success');
+        
+        document.getElementById('requestForm').classList.add('d-none');
+        document.getElementById('tripStatus').classList.remove('d-none');
+        map.setView(coords.pickup, 13);
+        updateTripDetails(pickup, dropoff, document.getElementById('estPrice').textContent);
+        
+        // Simulate payment flow
+        initiatePayment();
+      } catch (e) {
+        showNoty('Request failed', 'error');
+      }
+    }
+
+    async function geocodeLocations(pickup, dropoff) {
+      // Mock Harare locations
+      const coords = {
+        'Harare CBD': [-17.8179, 31.0446],
+        'Airport': [-17.9297, 31.1004],
+        'Borrowdale': [-17.788, 31.071],
+        // ... add more
+      };
+      return {
+        pickup: coords[pickup] || [-17.8179, 31.0446],
+        dropoff: coords[dropoff] || [-17.9297, 31.1004]
+      };
+    }
+
+    function updateTripDetails(route, info, price) {
+      document.getElementById('tripRoute').textContent = route;
+      document.getElementById('tripPrice').textContent = price;
+      document.getElementById('tripInfo').textContent = info;
+    }
+
+    function initiatePayment() {
+      // Existing payment logic + real-time status
+      showNoty('Payment initiated - tracking live', 'success');
+      document.getElementById('paymentStatus').textContent = 'Payment Processing';
+    }
+
+    function shareLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          customerMarker.setLatLng([pos.coords.latitude, pos.coords.longitude]);
+          map.setView([pos.coords.latitude, pos.coords.longitude], 15);
+          realtime.getSocket().emit('shareLocation', {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            tripId: currentTripId
+          });
+          showNoty('Location shared', 'success');
+        });
+      }
+    }
+
+    window.mapUpdateDriver = function(lat, lng, driverId, heading = 0) {
+      if (driverMarker) map.removeLayer(driverMarker);
+      
+      driverMarker = L.marker([lat, lng], {
+        icon: L.divIcon({
+          className: 'driver-icon',
+          html: `<i class="fas fa-car text-green fa-lg" style="transform: rotate(${heading}deg);"></i>`
+        })
+      }).addTo(map).bindPopup(`Driver #${driverId}`);
+      
+      map.setView([lat, lng], 15);
+      updateETA(lat, lng);
+    };
+
+    function recenterMap() {
+      if (currentTripId) {
+        // Focus on driver
+        if (driverMarker) map.panTo(driverMarker.getLatLng());
+      } else {
+        map.setView([-17.8179, 31.0446], 12);
+      }
+    }
+
+    function toggleLayers() {
+      // Satellite/normal toggle (OSM only)
+      showNoty('OSM Standard | Satellite coming soon', 'info');
+    }
+
+    function updateETA(lat, lng) {
+      // Haversine to pickup or simulate
+      document.getElementById('etaText').textContent = 'Live ETA updating...';
+    }
+
+    function callDriver() { showNoty('Calling driver +263... (sim)', 'info'); }
+    function messageDriver() { showNoty('SMS: Where are you? (sim)', 'info'); }
+    function cancelTrip() { showNoty('Trip cancelled', 'warning'); }
+
+    function showNoty(msg, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `alert alert-${type} position-fixed`;
+      toast.style.cssText = 'top:20px;right:20px;z-index:9999;width:320px;box-shadow:0 10px 30px rgba(0,0,0,0.2);';
+      toast.innerHTML = `<i class="fas fa-${type==='success'?'check':'info'}-circle me-2"></i>${msg}`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    // PWA
+    let deferredPWA = false;
+    function checkPWA() {
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        if (!deferredPWA) {
+          setTimeout(() => {
+            document.getElementById('pwaPrompt').style.display = 'flex';
+            deferredPWA = true;
+          }, 3000);
+        }
+      });
+    }
+    function deferPWA() {
+      document.getElementById('pwaPrompt').style.display = 'none';
+    }
+
+    function setDefaultEstimate() {
+      document.getElementById('estPrice').textContent = '$8.50';
+      document.getElementById('estDistance').textContent = '5.2 km';
+      document.getElementById('estEta').textContent = '12 min';
+      document.getElementById('estimateResult').classList.remove('d-none');
+    }
+  </script>
+</body>
+</html>

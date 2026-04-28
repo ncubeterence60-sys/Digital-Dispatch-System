@@ -1,26 +1,37 @@
 {
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "digital-dispatch-system",
-  "version": "1.0.0",
-  "description": "Uber-style real-time dispatch platform",
-  "main": "Dispatch/backend/server-marketplace.js",
+  "version": "2.0.0",
+  "description": "Digital Dispatch - Service Marketplace (server-marketplace.js main)",
+  "main": "Dispatch/backend/server-marketplace-fixed.js",
   "scripts": {
-    "start": "node Dispatch/backend/server-marketplace.js",
-    "dev": "node backend/server-marketplace.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node Dispatch/backend/server-marketplace-fixed.js",
+    "dev": "nodemon Dispatch/backend/server-marketplace.js",
+    "install-deps": "npm install",
+    "build": "npm run install-deps"
   },
   "keywords": [
     "dispatch",
     "uber",
-    "real-time"
+    "ride",
+    "marketplace"
   ],
-  "author": "",
+  "author": "Nasho Technologies",
   "license": "ISC",
-  "type": "commonjs",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
-    "body-parser": "^1.20.2",
+    "better-sqlite3": "^12.8.0",
+    "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "socket.io": "^4.8.3"
+    "socket.io": "^4.8.0",
+    "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.21",
+    "nodemon": "^3.1.7"
   }
 }

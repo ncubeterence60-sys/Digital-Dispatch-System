@@ -1,0 +1,129 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  passwordHash String
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  trips     Trip[]
+}
+
+model Driver {
+  id           Int      @id @default(autoincrement())
+  name         String
+  phone        String?
+  vehicle      Vehicle?
+  status       DriverStatus @default(OFFLINE)
+  lat          Float?
+  lng          Float?
+  heading      Float?    @default(0)
+  updatedAt    DateTime  @updatedAt
+  trips        Trip[]
+  earnings     Payment[]
+}
+
+model Vehicle {
+  id          Int    @id @default(autoincrement())
+  make        String
+  model       String
+  license     String @unique
+  color       String?
+  driverId    Int    @unique
+  driver      Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+}
+
+model Trip {
+  id             Int       @id @default(autoincrement())
+  pickupLocation String
+  dropoffLocation String
+  pickupLat      Float?
+  pickupLng      Float?
+  dropoffLat     Float?
+  dropoffLng     Float?
+  passengerName  String?
+  passengerPhone String?
+  status         TripStatus @default(PENDING)
+  serviceTypeId  Int?
+  estimatedFare  Float?
+  fare           Float?
+  createdAt      DateTime  @default(now())
+  completedAt    DateTime?
+  driverId       Int?
+  customerId     Int?
+  driver         Driver?   @relation(fields: [driverId], references: [id])
+  customer       User?     @relation(fields: [customerId], references: [id])
+  serviceType    ServiceType? @relation(fields: [serviceTypeId], references: [id])
+  ratings        Rating[]
+  payments       Payment[]
+}
+
+model ServiceType {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  basePrice   Float    @default(0)
+  kmRate      Float    @default(0)
+  hourRate    Float    @default(0)
+  icon        String?
+  active      Boolean  @default(true)
+  trips       Trip[]
+}
+
+model Payment {
+  id        Int      @id @default(autoincrement())
+  tripId    Int      @unique
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  driverId  Int
+  driver    Driver   @relation(fields: [driverId], references: [id])
+  amount    Float
+  status    PaymentStatus @default(PENDING)
+  paidAt    DateTime?
+}
+
+model Rating {
+  id      Int    @id @default(autoincrement())
+  tripId  Int    @unique
+  trip    Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  driverScore Int?
+  customerScore Int?
+  comment String?
+}
+
+enum Role {
+  CUSTOMER
+  DRIVER
+  ADMIN
+  DISPATCHER
+}
+
+enum DriverStatus {
+  AVAILABLE
+  BUSY
+  OFFLINE
+}
+
+enum TripStatus {
+  PENDING
+  ARRIVING
+  PICKED_UP
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+

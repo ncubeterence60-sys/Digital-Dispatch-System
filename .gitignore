@@ -1,0 +1,8 @@
+node_modules
+.env
+dispatch_system.db
+*.db
+prisma/migrations/
+.DS_Store
+*.log
+

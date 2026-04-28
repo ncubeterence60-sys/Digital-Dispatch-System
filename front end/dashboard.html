@@ -1,49 +1,32 @@
-/* Uber Style Dark Theme for Digital Dispatch */
-:root {
-  --uber-black: #000;
-  --uber-dark: #0f1419;
-  --uber-card-dark: #1a1f26;
-  --uber-green: #00d4aa;
-  --uber-green-dark: #00aa88;
-  --uber-gold: #ffc107;
-  --uber-white: #ffffff;
-  --uber-light-gray: #e5e7eb;
-}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport"
+        content="width=device-width,initial-scale=1.0" />
+        <title>Digital Dispatch - Admin Dashboard</tittle>
+            link rel="stylesheet"
+            href="dashboard.css"
+        </head>
 
-/* Navbar Uber Dark */
-.navbar {
-  background: var(--uber-dark) !important;
-  box-shadow: 0 2px 10px rgba(0,212,170,0.3);
-}
+        <body>
 
-/* Card Headers Uber Style */
-.uber-green {
-  background: linear-gradient(135deg, var(--uber-green), var(--uber-green-dark)) !important;
-}
+            <body>
 
-/* Status Badges Uber Pulse */
-.status-badge.searching-driver {
-  animation: uber-pulse 1.2s infinite;
-  box-shadow: 0 0 20px rgba(255,193,7,0.6);
-}
-.status-badge.available {
-  background: linear-gradient(135deg, rgba(0,212,170,0.2), rgba(0,170,136,0.2));
-  box-shadow: 0 0 15px rgba(0,212,170,0.4);
-}
+                <dev class="sidebar">
+                    <h2>Admin</h2>
+                    <ul>
+                        <li onclick="showPage('overview')">Dashboard </li>
+                        <li onclick="showPage('requests')">Requests </li>
+                        <li onclick="showPage('drivers')">Drivers </li>
+                        <li onclick="showPage('customers)">Customers </li>
+<li onclick="showPage"('earnings')">Earnings"</li>
+                    </ul>
+                </div>
 
-@keyframes uber-pulse {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,212,170,0.7); }
-  70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(0,212,170,0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,212,170,0); }
-}
+                <div class="main">
 
-/* Dark Cards */
-.card {
-  background: var(--uber-card-dark);
-  border: 1px solid #2a3441;
-  color: var(--uber-light-gray);
-}
-.card-header {
-  border-bottom: 1px solid #2a3441;
-}
+                    <div id="overview" class="page">
+                        <hi>Dashboad Overview</h1>
 
+                            
