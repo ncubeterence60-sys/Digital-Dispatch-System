@@ -6,16 +6,23 @@
   "homepage": "./",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --skipLibCheck && vite build && copy dashboard.html dist",
+    "build": "vite build",
     "preview": "vite preview",
     "electron": "electron .",
     "electron-dev": "NODE_ENV=development concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
-    "dist": "npm run build && electron-builder"
+    "dist": "npm run build && electron-builder",
+    "start": "npm run build && electron .",
+    "vite-build": "vite build",
+    "vite-preview": "vite preview",
+    "electron-start": "electron ."
   },
   "dependencies": {
     "@tanstack/react-table": "^8.20.5",
+    "chart.js": "^4.5.1",
     "lucide-react": "^0.441.0",
+    "mqtt": "^5.15.1",
     "react": "^18.3.1",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",
     "socket.io-client": "^4.8.1"

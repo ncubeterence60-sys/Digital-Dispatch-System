@@ -9,7 +9,7 @@ interface Trip {
   pickup: string
   dropoff: string
   price: number
-  status: 'pending' | 'accepted' | 'completed' | 'cancelled'
+  status: string
   date: string
 }
 
@@ -23,6 +23,12 @@ const Trips: React.FC = () => {
 
   const { token } = useAuth();
 
+  function mapBackendStatus(status: string): string {
+    const s = (status || 'PENDING').toLowerCase();
+    if (s === 'arriving' || s === 'in_progress') return 'accepted';
+    return s;
+  }
+
   const fetchTrips = async () => {
     try {
       const response = await fetch('/api/admin/trips', {
@@ -31,13 +37,26 @@ const Trips: React.FC = () => {
         }
       });
       const data = await response.json()
-      setTrips(data)
+      // Map backend response to frontend interface
+      const mapped: Trip[] = Array.isArray(data)
+        ? data.map((t: any) => ({
+            id: t.id,
+            customer: t.customer?.username || t.passengerName || 'Unknown',
+            driver: t.driver?.name || 'Unassigned',
+            pickup: t.pickupLocation || 'N/A',
+            dropoff: t.dropoffLocation || 'N/A',
+            price: t.fare || t.estimatedFare || 0,
+            status: mapBackendStatus(t.status),
+            date: t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'N/A'
+          }))
+        : [];
+      setTrips(mapped)
     } catch (error) {
       console.error('Failed to fetch trips', error)
     }
   }
 
-  const filteredTrips = trips.filter(trip => 
+  const filteredTrips = trips.filter(trip =>
     filter === 'all' || trip.status === filter
   )
 
@@ -45,7 +64,10 @@ const Trips: React.FC = () => {
     try {
       await fetch(`/api/admin/trips/${tripId}/assign`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token || ''}`
+        },
         body: JSON.stringify({ driverId })
       });
       fetchTrips(); // Refresh data
@@ -58,12 +80,29 @@ const Trips: React.FC = () => {
     if (confirm('Are you sure you want to cancel this trip?')) {
       try {
         await fetch(`/api/admin/trips/${tripId}/cancel`, {
-          method: 'POST'
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token || ''}`
+          }
         });
         fetchTrips(); // Refresh data
       } catch (error) {
         console.error('Failed to cancel trip');
       }
+    }
+  };
+
+  const completeTrip = async (tripId: number) => {
+    try {
+      await fetch(`/api/admin/trips/${tripId}/complete`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token || ''}`
+        }
+      });
+      fetchTrips(); // Refresh data
+    } catch (error) {
+      console.error('Failed to complete trip');
     }
   };
 
@@ -167,9 +206,9 @@ const Trips: React.FC = () => {
                           Cancel
                         </button>
                       )}
-                      {trip.status === 'accepted' && (
+                      {(trip.status === 'accepted' || trip.status === 'arriving' || trip.status === 'in_progress') && (
                         <button
-                          onClick={() => {/* Mark as completed */}}
+                          onClick={() => completeTrip(trip.id)}
                           className="flex items-center gap-1 bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600"
                         >
                           <Check className="w-3 h-3" />

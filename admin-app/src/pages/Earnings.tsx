@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useAuth } from '../contexts/AuthContext'
 
 interface Payout {
   id: number
@@ -8,17 +9,40 @@ interface Payout {
   date: string
 }
 
+interface EarningsStats {
+  totalTrips: number
+  totalRevenue: number
+  activeDrivers: number
+  completedTrips: number
+  pendingTrips: number
+  platformFee: number
+  driverEarnings: number
+}
+
 const Earnings: React.FC = () => {
+  const { token } = useAuth()
   const [payouts, setPayouts] = useState<Payout[]>([])
+  const [stats, setStats] = useState<EarningsStats>({
+    totalTrips: 0,
+    totalRevenue: 0,
+    activeDrivers: 0,
+    completedTrips: 0,
+    pendingTrips: 0,
+    platformFee: 0,
+    driverEarnings: 0
+  })
   const [selectedPeriod, setSelectedPeriod] = useState('30days')
 
   useEffect(() => {
     fetchPayouts()
+    fetchStats()
   }, [])
 
   const fetchPayouts = async () => {
     try {
-      const response = await fetch('/api/admin/payouts')
+      const response = await fetch('/api/admin/payouts', {
+        headers: { Authorization: `Bearer ${token || ''}` }
+      })
       const data = await response.json()
       setPayouts(data)
     } catch (error) {
@@ -26,11 +50,24 @@ const Earnings: React.FC = () => {
     }
   }
 
-
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/admin/earnings', {
+        headers: { Authorization: `Bearer ${token || ''}` }
+      })
+      const data = await response.json()
+      setStats(data)
+    } catch (error) {
+      console.error('Failed to fetch earnings stats')
+    }
+  }
 
   const approvePayout = async (id: number) => {
     try {
-      await fetch(`/api/admin/payouts/${id}/approve`, { method: 'POST' })
+      await fetch(`/api/admin/payouts/${id}/approve`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token || ''}` }
+      })
       fetchPayouts()
     } catch (error) {
       console.error('Approval failed')
@@ -65,11 +102,11 @@ const Earnings: React.FC = () => {
         <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-8 rounded-2xl shadow-xl border border-orange-200">
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <div className="text-3xl font-bold text-orange-600">$14,508</div>
+              <div className="text-3xl font-bold text-orange-600">${stats.totalRevenue.toLocaleString()}</div>
               <div className="text-orange-700 font-semibold">Total Revenue</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-orange-600">$1,311</div>
+              <div className="text-3xl font-bold text-orange-600">${stats.platformFee.toLocaleString()}</div>
               <div className="text-orange-700 font-semibold">Platform Fee (9%)</div>
             </div>
           </div>
@@ -113,16 +150,16 @@ const Earnings: React.FC = () => {
           <h3 className="text-xl font-bold mb-6">Settlement Summary</h3>
           <div className="grid grid-cols-2 gap-6">
             <div className="text-center p-6 border-r border-gray-200">
-              <div className="text-3xl font-bold text-emerald-600">$12,197</div>
+              <div className="text-3xl font-bold text-emerald-600">${stats.driverEarnings.toLocaleString()}</div>
               <div className="text-gray-600">Paid to Drivers</div>
             </div>
             <div className="text-center p-6">
-              <div className="text-3xl font-bold text-yellow-600">$565.50</div>
+              <div className="text-3xl font-bold text-yellow-600">${payouts.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}</div>
               <div className="text-gray-600">Pending Payouts</div>
             </div>
           </div>
           <div className="mt-8 p-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl text-center">
-            <div className="text-2xl font-bold">$1,311</div>
+            <div className="text-2xl font-bold">${stats.platformFee.toLocaleString()}</div>
             <div className="text-sm opacity-90">Platform Commission (9%)</div>
           </div>
         </div>

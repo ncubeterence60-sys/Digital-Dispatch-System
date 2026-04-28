@@ -8,10 +8,9 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'https://localhost:3443',
+        target: 'http://localhost:3000',
         changeOrigin: true,
-        secure: false, // Self-signed
-        headers: { 'Host': 'localhost:3443' }
+        secure: false
       }
     }
   }

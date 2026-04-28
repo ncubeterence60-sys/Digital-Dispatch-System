@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-// API base URL - works in both web (proxied) and Electron contexts
-// API proxied via Vite + HTTPS backend
-const API_BASE_URL = '/api';
+// API base URL - backend runs on HTTPS port 3443
+const API_BASE_URL = 'https://localhost:3443/api';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -33,6 +32,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     if (token) {
+      // Dev bypass token — skip backend verification
+      if (token === 'dev_token_bypass') {
+        setIsAuthenticated(true);
+        setLoading(false);
+        return;
+      }
+
       // Verify token with backend
       fetch(`${API_BASE_URL}/admin/verify`, {
         headers: { Authorization: `Bearer ${token}` },

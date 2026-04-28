@@ -3,11 +3,12 @@
   "name": "digital-dispatch-system",
   "version": "2.0.0",
   "description": "Digital Dispatch - Service Marketplace (server-marketplace.js main)",
-  "main": "Dispatch/backend/server-marketplace.js",
+  "main": "Dispatch/backend/server-marketplace-fixed.js",
   "scripts": {
     "start": "node Dispatch/backend/server-marketplace-fixed.js",
     "dev": "nodemon Dispatch/backend/server-marketplace.js",
-    "install-deps": "npm install"
+    "install-deps": "npm install",
+    "build": "npm run install-deps"
   },
   "keywords": [
     "dispatch",
